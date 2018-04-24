@@ -3,31 +3,12 @@
 
 import os
 import random
+import argparse
 import scipy.misc
 import h5py
 import numpy as np
 from tqdm import tqdm
-
-
-LABELS = [
-    'backpack',
-    'cat',
-    'jeep',
-    'microwave',
-    'mug',
-    'teapot'
-]
-
-ONE_HOT_IMAGE_LABELS = {
-    'backpack':  np.array([1., 0., 0., 0., 0., 0.]),
-    'cat':       np.array([0., 1., 0., 0., 0., 0.]),
-    'jeep':      np.array([0., 0., 1., 0., 0., 0.]),
-    'microwave': np.array([0., 0., 0., 1., 0., 0.]),
-    'mug':       np.array([0., 0., 0., 0., 1., 0.]),
-    'teapot':    np.array([0., 0., 0., 0., 0., 1.])
-}
-
-base_dir = 'dataset/160/'
+import config as cfg
 
 
 def shuffle(list1, list2):
@@ -45,8 +26,8 @@ def get_dataset_paths(train_percent, validation_percent, test_percent):
     validation = {}
     test = {}
 
-    for category_name in ONE_HOT_IMAGE_LABELS:
-        dir_path = os.path.join(base_dir, category_name)
+    for category_name in cfg.ONE_HOT_IMAGE_LABELS:
+        dir_path = os.path.join(cfg.PKG_INPUT_BASE_DIR, category_name)
 
         temp_paths = []
         for file_name in os.listdir(dir_path):
@@ -70,16 +51,16 @@ def get_dataset_paths(train_percent, validation_percent, test_percent):
     test_paths = []
     test_labels = []
 
-    for category_name in ONE_HOT_IMAGE_LABELS:
+    for category_name in cfg.ONE_HOT_IMAGE_LABELS:
         for path in train[category_name]:
             train_paths.append(path)
-            train_labels.append(ONE_HOT_IMAGE_LABELS[category_name])
+            train_labels.append(cfg.ONE_HOT_IMAGE_LABELS[category_name])
         for path in validation[category_name]:
             val_paths.append(path)
-            val_labels.append(ONE_HOT_IMAGE_LABELS[category_name])
+            val_labels.append(cfg.ONE_HOT_IMAGE_LABELS[category_name])
         for path in test[category_name]:
             test_paths.append(path)
-            test_labels.append(ONE_HOT_IMAGE_LABELS[category_name])
+            test_labels.append(cfg.ONE_HOT_IMAGE_LABELS[category_name])
 
     train_paths, train_labels = shuffle(train_paths, train_labels)
     val_paths, val_labels = shuffle(val_paths, val_labels)
@@ -91,13 +72,14 @@ def get_dataset_paths(train_percent, validation_percent, test_percent):
 def package():
     print('[*] Packaging...')
 
-    (train_paths, train_labels), (val_paths, val_labels), (test_paths, test_labels) = get_dataset_paths(80, 10, 10)
+    (train_paths, train_labels), (val_paths, val_labels), (test_paths, test_labels) = get_dataset_paths(
+        cfg.PKG_TRAIN_PERCENT, cfg.PKG_VAL_PERCENT, cfg.PKG_TEST_PERCENT)
 
-    train_shape = (len(train_paths), 160, 160, 3)
-    val_shape = (len(val_paths), 160, 160, 3)
-    test_shape = (len(test_paths), 160, 160, 3)
+    train_shape = (len(train_paths), cfg.OUTPUT_IMAGE_SIZE, cfg.OUTPUT_IMAGE_SIZE, 3)
+    val_shape = (len(val_paths), cfg.OUTPUT_IMAGE_SIZE, cfg.OUTPUT_IMAGE_SIZE, 3)
+    test_shape = (len(test_paths), cfg.OUTPUT_IMAGE_SIZE, cfg.OUTPUT_IMAGE_SIZE, 3)
 
-    h5_file = h5py.File('dataset.h5', mode='w')
+    h5_file = h5py.File(cfg.PKG_OUT_FILENAME, mode='w')
     h5_file.create_dataset('train_images', train_shape, np.uint8)
     h5_file.create_dataset('train_labels', data=train_labels)
     h5_file.create_dataset('val_images', val_shape, np.uint8)
@@ -120,14 +102,20 @@ def package():
     h5_file.close()
 
 
-def check_package():
-    h5_file = h5py.File('dataset.h5', mode='r')
+def check_package(dataset_name, label_names):
+    if not os.path.exists(cfg.PKG_OUT_FILENAME):
+        print('File %s tidak ada.' % cfg.PKG_OUT_FILENAME)
+        return
 
-    rand_idx = np.random.random_integers(0, len(h5_file['train_images']), 24)
+    h5_file = h5py.File(cfg.PKG_OUT_FILENAME, mode='r')
+
+    rand_idx = np.random.random_integers(0, len(h5_file[dataset_name]), 24)
     images = []
     labels = []
-    [images.append(h5_file['train_images'][idx]) for idx in rand_idx]
-    [labels.append(LABELS[np.argmax(h5_file['train_labels'][idx])]) for idx in rand_idx]
+    [images.append(h5_file[dataset_name][idx]) for idx in rand_idx]
+    [labels.append(cfg.LABELS[np.argmax(h5_file[label_names][idx])]) for idx in rand_idx]
+
+    print('Images : %d, Labels: %d' % (len(h5_file[dataset_name]), len(h5_file[label_names])))
 
     import matplotlib.pyplot as plt
 
@@ -141,5 +129,16 @@ def check_package():
     plt.show()
 
 
-# package()
-check_package()
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Data preprocessing')
+    parser.add_argument('--run', dest='run', help='Package atau check package ["package" or "check"]')
+
+    args = parser.parse_args()
+    if args.run == 'package':
+        package()
+    elif args.run == 'check_train':
+        check_package('train_images', 'train_labels')
+    elif args.run == 'check_val':
+        check_package('val_images', 'val_labels')
+    elif args.run == 'check_test':
+        check_package('test_images', 'test_labels')

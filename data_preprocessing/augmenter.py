@@ -18,7 +18,7 @@ def augment_images(images_dir, output_dir, augment_per_image):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    data_gen = ImageDataGenerator(rotation_range=20, width_shift_range=0.4, horizontal_flip=True)
+    data_gen = ImageDataGenerator(rotation_range=20, width_shift_range=0.25, horizontal_flip=True)
     for file_name in tqdm(os.listdir(images_dir)):
         file_path = os.path.join(images_dir, file_name)
 
