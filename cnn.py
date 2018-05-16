@@ -53,7 +53,7 @@ model.use_name_scope('fully_connected_3')
 model.add(FullyConnected(6))
 #
 
-dataset = data_reader.DataSet(batch_size=20)
+dataset = data_reader.DataSet('dataset/dataset.h5', batch_size=20)
 epochs = 50
 
 model.compile()

@@ -1,0 +1,8 @@
+{
+  "base_dir": "dataset/128",
+  "img_size": "128x128x3",
+  "filename": "dataset/dataset.h5",
+  "train": 80,
+  "validation": 10,
+  "test": 10
+}
