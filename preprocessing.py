@@ -7,7 +7,7 @@ import config as cfg
 
 
 def do_resize_all_images():
-    from resizer import resize_images
+    from preprocess.resizer import resize_images
 
     for dir_name in cfg.CATEGORIES_DIR_NAME:
         resize_images(images_dir=os.path.join(cfg.BASE_ORIGINAL_DATA_DIR, dir_name),
@@ -16,7 +16,7 @@ def do_resize_all_images():
 
 
 def do_augment_all_images():
-    from augmenter import augment_images
+    from preprocess.augmenter import augment_images
 
     for dir_name, augment_count in cfg.CATEGORIES_DIR_NAME_AND_AUG_COUNT:
         if augment_count <= 0:
