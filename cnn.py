@@ -2,13 +2,14 @@
 # Created by abdularis on 24/04/18
 
 
+import tensorflow as tf
 from tsnn.models import Model
 from tsnn.operations import Convolution, Relu, MaxPooling, Flatten, FullyConnected
 
 
-def build_model():
+def build_model_arch(input_shape, num_classes, learning_rate):
     # model construction
-    model = Model(input_shape=[None, 128, 128, 3], num_classes=6)
+    model = Model(input_shape=input_shape, num_classes=num_classes)
     model.use_name_scope('conv_1')
     model.add(Convolution(64, (3, 3)))
     model.add(Relu())
@@ -50,8 +51,8 @@ def build_model():
     model.add(Relu())
 
     model.use_name_scope('fully_connected_3')
-    model.add(FullyConnected(6))
+    model.add(FullyConnected(num_classes))
     # end
 
-    model.compile()
+    model.compile(optimizer=tf.train.RMSPropOptimizer(learning_rate=learning_rate))
     return model
