@@ -21,6 +21,7 @@ class Model(object):
         self.optimizer = None
         self.prediction_accuracy = None
         self.prediction = None
+        self.summary_all = None
 
     def use_name_scope(self, name):
         self.name_scope = "%s/" % name
@@ -39,18 +40,22 @@ class Model(object):
             self.model = operation.get_operation_graph(self.model)
         self.param_count += operation.param_count
 
-    def compile(self):
+    def compile(self, optimizer):
         output_score = self.model
 
-        loss = tf.nn.softmax_cross_entropy_with_logits(logits=output_score, labels=self.y)
-        loss = tf.reduce_mean(loss)
+        # cross entropy loss
+        with tf.name_scope('cross_entropy'):
+            loss = tf.nn.softmax_cross_entropy_with_logits(logits=output_score, labels=self.y)
+            loss = tf.reduce_mean(loss)
 
-        optimizer = tf.train.RMSPropOptimizer(learning_rate=1e-3).minimize(loss)
+        with tf.name_scope('train'):
+            optimizer = optimizer.minimize(loss)
 
-        y_truth = tf.argmax(self.y, 1)
-        y_prediction = tf.argmax(output_score, 1)
-        correct_prediction = tf.cast(tf.equal(y_prediction, y_truth), tf.float32)
-        accuracy = tf.reduce_mean(correct_prediction)
+        with tf.name_scope('pred_accuracy'):
+            y_truth = tf.argmax(self.y, 1)
+            y_prediction = tf.argmax(output_score, 1)
+            correct_prediction = tf.cast(tf.equal(y_prediction, y_truth), tf.float32)
+            accuracy = tf.reduce_mean(correct_prediction)
 
         # for training
         self.loss = loss
@@ -58,15 +63,31 @@ class Model(object):
         self.prediction_accuracy = accuracy
 
         # prediction
-        self.prediction = tf.nn.softmax(logits=output_score, name='output_prediction')
+        self.prediction = tf.nn.softmax(logits=output_score, name='inference')
 
         self.is_compiled = True
 
-    def train_step(self, session, x, y):
+        # set summary
+        tf.summary.scalar('accuracy', self.prediction_accuracy)
+        tf.summary.scalar('cross_entropy_loss', self.loss)
+        self.summary_all = tf.summary.merge_all()
+
+    def train_step(self, session, x, y, run_summary=False):
         if not self.is_compiled:
             raise ValueError(NOT_COMPILE_ERR_MSG)
-        train_accuracy, loss, _ = session.run([self.prediction_accuracy, self.loss, self.optimizer], feed_dict={self.x: x, self.y: y})
-        return train_accuracy, loss
+
+        fetches = [self.prediction_accuracy, self.loss, self.optimizer]
+        feed_dict = {self.x: x, self.y: y}
+
+        if run_summary:
+            fetches.append(self.summary_all)
+            result = session.run(fetches=fetches, feed_dict=feed_dict)
+            # return training accuracy, loss, summary
+            return result[0], result[1], result[3]
+        else:
+            result = session.run(fetches=fetches, feed_dict=feed_dict)
+            # return training accuracy, loss
+            return result[0], result[1]
 
     def evaluate(self, session, x, y):
         if not self.is_compiled:
