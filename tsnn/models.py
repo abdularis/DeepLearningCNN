@@ -21,7 +21,9 @@ class Model(object):
         self.optimizer = None
         self.prediction_accuracy = None
         self.prediction = None
-        self.summary_all = None
+        self.train_summary = None
+        self.val_summary = None
+        self.test_summary = None
 
     def use_name_scope(self, name):
         self.name_scope = "%s/" % name
@@ -68,9 +70,23 @@ class Model(object):
         self.is_compiled = True
 
         # set summary
-        tf.summary.scalar('accuracy', self.prediction_accuracy)
-        tf.summary.scalar('cross_entropy_loss', self.loss)
-        self.summary_all = tf.summary.merge_all()
+        self.train_summary = tf.summary.merge(
+            [
+                tf.summary.scalar('accuracy', self.prediction_accuracy),
+                tf.summary.scalar('cross_entropy_loss', self.loss)
+            ]
+        )
+        self.val_summary = tf.summary.merge(
+            [
+                tf.summary.scalar('val_accuracy', self.prediction_accuracy),
+                tf.summary.scalar('val_cross_entropy_loss', self.loss)
+            ]
+        )
+        self.test_summary = tf.summary.merge(
+            [
+                tf.summary.scalar('test_accuracy', self.prediction_accuracy)
+            ]
+        )
 
     def train_step(self, session, x, y, run_summary=False):
         if not self.is_compiled:
@@ -80,7 +96,7 @@ class Model(object):
         feed_dict = {self.x: x, self.y: y}
 
         if run_summary:
-            fetches.append(self.summary_all)
+            fetches.append(self.train_summary)
             result = session.run(fetches=fetches, feed_dict=feed_dict)
             # return training accuracy, loss, summary
             return result[0], result[1], result[3]
@@ -92,8 +108,8 @@ class Model(object):
     def evaluate(self, session, x, y):
         if not self.is_compiled:
             raise ValueError(NOT_COMPILE_ERR_MSG)
-        eval_accuracy = session.run(self.prediction_accuracy, feed_dict={self.x: x, self.y: y})
-        return eval_accuracy
+        # return accuracy, loss, summary
+        return session.run([self.prediction_accuracy, self.loss, self.val_summary], feed_dict={self.x: x, self.y: y})
 
     def predict(self, session, x):
         if not self.is_compiled:
