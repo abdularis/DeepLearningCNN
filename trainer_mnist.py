@@ -31,10 +31,10 @@ with tf.Session() as sess:
                 batch_images = batch_images.reshape((batch_images.shape[0], 28, 28, 1))
 
                 if step % 100 == 0:
-                    train_accuracy, loss = model.train_step(sess, batch_images, batch_labels, run_summary=True)
-                else:
                     train_accuracy, loss, summary = model.train_step(sess, batch_images, batch_labels, run_summary=True)
                     file_writer.add_summary(summary, global_step)
+                else:
+                    train_accuracy, loss = model.train_step(sess, batch_images, batch_labels, run_summary=False)
                 print('Epoch %d, step %d, global step %d, training accuracy: %f, training loss %f'
                       % (epoch, step, global_step, train_accuracy, loss))
                 global_step += 1
