@@ -1,6 +1,7 @@
 # trainer.py
 # Created by abdularis on 16/05/18
 
+import numpy as np
 import tensorflow as tf
 import cnn
 import data_reader
@@ -39,11 +40,19 @@ with tf.Session() as sess:
                           % (epoch, step, global_step, train_accuracy, loss))
                 global_step += 1
 
+            val_accuracies = []
+            val_losses = []
             for step in range(val_data.batch_count):
                 batch_images, batch_labels = val_data.next_batch()
                 val_accuracy, loss, summary = model.evaluate(sess, batch_images, batch_labels)
-                print('\tValidation accuracy: %f, loss %f' % (val_accuracy, loss))
+                val_accuracies.append(val_accuracy)
+                val_losses.append(loss)
                 # file_writer.add_summary(summary, epoch)
+
+            mean_accuracy = np.mean(val_accuracies)
+            mean_loss = np.mean(val_losses)
+            print('\tValidation accuracy: %f, loss %f' % (mean_accuracy, mean_loss))
+
             saver.save(sess, save_path=MODEL_FILENAME, global_step=epoch)
     except KeyboardInterrupt:
         print('Training cancelled intentionally.')
