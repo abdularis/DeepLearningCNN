@@ -3,7 +3,7 @@
 
 import tensorflow as tf
 import cnn
-from data_reader import DataSet
+import data_reader
 
 
 INPUT_SHAPE = [None, 128, 128, 3]
@@ -17,7 +17,7 @@ MODEL_FILENAME = './model/aar_net'
 RUN_NAME = '1'
 
 model = cnn.build_model_arch(INPUT_SHAPE, NUM_CLASSES, LEARNING_RATE)
-data_set = DataSet(DATASET_FILENAME, batch_size=BATCH_SIZE)
+train_data, val_data, test_data = data_reader.read_data_set(DATASET_FILENAME, BATCH_SIZE)
 
 global_step = 0
 file_writer = tf.summary.FileWriter('logs/%s/' % RUN_NAME)
@@ -28,8 +28,8 @@ with tf.Session() as sess:
 
     try:
         for epoch in range(NUM_EPOCHS):
-            for step in range(data_set.batch_count):
-                batch_images, batch_labels = data_set.next_batch()
+            for step in range(train_data.batch_count):
+                batch_images, batch_labels = train_data.next_batch()
                 if step % 50 == 0:
                     train_accuracy, loss, summary = model.train_step(sess, batch_images, batch_labels, run_summary=True)
                     file_writer.add_summary(summary, global_step)
@@ -39,10 +39,11 @@ with tf.Session() as sess:
                           % (epoch, step, global_step, train_accuracy, loss))
                 global_step += 1
 
-            val_images, val_labels = data_set.val_data()
-            val_accuracy, loss, summary = model.evaluate(sess, val_images, val_labels)
-            print('\tValidation accuracy: %f, loss %f' % (val_accuracy, loss))
-            file_writer.add_summary(summary, epoch)
+            for step in range(val_data.batch_count):
+                batch_images, batch_labels = val_data.next_batch()
+                val_accuracy, loss, summary = model.evaluate(sess, batch_images, batch_labels)
+                print('\tValidation accuracy: %f, loss %f' % (val_accuracy, loss))
+                # file_writer.add_summary(summary, epoch)
             saver.save(sess, save_path=MODEL_FILENAME, global_step=epoch)
     except KeyboardInterrupt:
         print('Training cancelled intentionally.')

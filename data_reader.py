@@ -6,21 +6,32 @@ import h5py
 import numpy as np
 
 
+def read_data_set(path, batch_size):
+    file = h5py.File(path, 'r')
+    train = DataSet(file, 'train_images', 'train_labels', batch_size)
+    val = DataSet(file, 'val_images', 'val_labels', batch_size)
+    test = DataSet(file, 'test_images', 'test_labels', batch_size)
+
+    return train, val, test
+
+
 class DataSet(object):
 
-    def __init__(self, filename, batch_size):
-        self.file = h5py.File(filename, mode='r')
+    def __init__(self, h5file, dataset_name_images, dataset_name_labels, batch_size):
+        self.file = h5file
+        self.dataset_name_images = dataset_name_images
+        self.dataset_name_labels = dataset_name_labels
         self.batch_size = batch_size
         self.current_batch = 0
-        self.train_size = len(self.file['train_images'])
-        self.batch_count = math.ceil(self.train_size / self.batch_size)
+        self.data_set_size = len(self.file[self.dataset_name_images])
+        self.batch_count = math.ceil(self.data_set_size / self.batch_size)
 
     def _next_start_end_index(self):
         if self.current_batch >= self.batch_count:
             self.current_batch = 0
 
-        start_idx = min(self.current_batch * self.batch_size, self.train_size)
-        end_idx = min(start_idx + self.batch_size, self.train_size)
+        start_idx = min(self.current_batch * self.batch_size, self.data_set_size)
+        end_idx = min(start_idx + self.batch_size, self.data_set_size)
         self.current_batch += 1
         return start_idx, end_idx
 
@@ -40,18 +51,4 @@ class DataSet(object):
 
     def next_batch(self):
         start_idx, end_idx = self._next_start_end_index()
-        return self.file['train_images'][start_idx:end_idx], self.file['train_labels'][start_idx:end_idx]
-
-    def next_batch_val(self):
-        start_idx, end_idx = self._next_start_end_index()
-        return self.file['val_images'][start_idx:end_idx], self.file['val_labels'][start_idx:end_idx]
-
-    def next_batch_test(self):
-        start_idx, end_idx = self._next_start_end_index()
-        return self.file['test_images'][start_idx:end_idx], self.file['test_labels'][start_idx:end_idx]
-
-    def val_data(self):
-        return self.file['val_images'], self.file['val_labels']
-
-    def test_data(self):
-        return self.file['test_images'], self.file['test_labels']
+        return self.file[self.dataset_name_images][start_idx:end_idx], self.file[self.dataset_name_labels][start_idx:end_idx]
