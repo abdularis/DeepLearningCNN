@@ -17,6 +17,47 @@ def shuffle(list1, list2):
     return zip(*temp_list)
 
 
+def split(data, split_amount):
+    offset = round(len(data) / 100 * split_amount)
+    return data[:offset], data[offset:]
+
+
+def get_data_set_split(base_dir, folder_name, train_percent, validation_percent, test_percent):
+    if (train_percent + validation_percent + test_percent) != 100:
+        print('Train % + test % != 100%')
+        return
+
+    dir_path = os.path.join(base_dir, folder_name)
+    paths = []
+    for file_name in os.listdir(dir_path):
+        file_path = os.path.join(dir_path, file_name)
+        paths.append(file_path)
+
+    random.shuffle(paths)
+
+    train_paths, test_paths = split(paths, train_percent)
+    train_paths, val_paths = split(train_paths, 100 - validation_percent)
+
+    return train_paths, val_paths, test_paths
+
+
+def get_all_data_set_paths_split(base_dir, folder_names, labels, one_hot, train_percent, validation_percent, test_percent):
+    all_train_paths = []
+    all_train_labels = []
+
+    all_val_paths = []
+
+    all_test_paths = []
+    for i in range(len(labels)):
+        lbl_one_hot = one_hot[labels[i]]
+
+        train_paths, val_paths, test_paths = get_data_set_split(base_dir, folder_names[i], train_percent, validation_percent, test_paths)
+
+        for p in train_paths: all_train_paths.append(p)
+        for p in val_paths: all_val_paths.append(p)
+        for p in test_paths: all_test_paths.append(p)
+
+
 def get_dataset_split_paths(base_dir, train_percent, validation_percent, test_percent):
     if (train_percent + validation_percent + test_percent) != 100:
         print('Train % + validation % + test % != 100%')
@@ -130,6 +171,7 @@ def check_package(filename, dataset_name, label_names):
         encoded_labels[idx] = lbl
 
     rand_idx = np.random.random_integers(0, len(h5_file[dataset_name]), 24)
+    print("random index: ", rand_idx)
     images = []
     labels = []
     [images.append(h5_file[dataset_name][idx]) for idx in rand_idx]

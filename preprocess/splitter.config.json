@@ -1,0 +1,8 @@
+{
+  "base_dir": "dataset/128",
+  "output_dir": "dataset/split",
+  "folder_names": ["backpack", "microwave", "mug", "shoe", "teapot", "wristwatch"],
+  "train_split": 60,
+  "val_split": 20,
+  "test_split": 20
+}

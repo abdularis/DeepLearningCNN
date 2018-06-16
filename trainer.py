@@ -8,18 +8,49 @@ NUM_CLASSES = 6
 LEARNING_RATE = 1e-4
 
 
+def get_mean_op():
+    import tensorflow as tf
+
+    accuracies = tf.placeholder(tf.float32, shape=[None])
+    mean_accuracy = tf.reduce_mean(accuracies)
+
+    losses = tf.placeholder(tf.float32, shape=[None])
+    mean_loss = tf.reduce_mean(losses)
+
+    train_summary = tf.summary.merge(
+        [
+            tf.summary.scalar('train_accuracy_per_epoch', mean_accuracy),
+            tf.summary.scalar('train_cross_entropy_per_epoch', mean_loss)
+        ]
+    )
+
+    val_summary = tf.summary.merge(
+        [
+            tf.summary.scalar('val_accuracy_per_epoch', mean_accuracy),
+            tf.summary.scalar('val_cross_entropy_per_epoch', mean_loss)
+        ]
+    )
+
+    train_fetches = [mean_accuracy, mean_loss, train_summary]
+    val_fetches = [mean_accuracy, mean_loss, val_summary]
+
+    return accuracies, losses, train_fetches, val_fetches
+
+
 def run_trainer(model_ver, num_epocs, batch_size, dataset_path, model_name, run_name):
 
-    import numpy as np
     import tensorflow as tf
     import cnn
     import data_reader
+    import data_config as cfg
 
     if model_ver == 2:
         model = cnn.build_model_arch_v2(INPUT_SHAPE, NUM_CLASSES, LEARNING_RATE)
     else:
         model = cnn.build_model_arch(INPUT_SHAPE, NUM_CLASSES, LEARNING_RATE)
-    train_data, val_data, test_data = data_reader.read_data_set(dataset_path, batch_size)
+    train_data, val_data, test_data = data_reader.read_data_set_dir(dataset_path, cfg.one_hot, batch_size)
+
+    accuracies_input, losses_input, train_mean, val_mean = get_mean_op()
 
     global_step = 0
     file_writer = tf.summary.FileWriter('logs/%s/' % run_name)
@@ -41,15 +72,21 @@ def run_trainer(model_ver, num_epocs, batch_size, dataset_path, model_name, run_
                         train_accuracy, loss, summary = model.train_step(sess, batch_images, batch_labels,
                                                                          run_summary=True)
                         file_writer.add_summary(summary, global_step)
+
+                        print('Epoch %d, step %d, global step %d, training accuracy: %f, training loss %f'
+                              % (epoch, step, global_step, train_accuracy, loss))
                     else:
                         train_accuracy, loss = model.train_step(sess, batch_images, batch_labels, run_summary=False)
-                    print('Epoch %d, step %d, global step %d, training accuracy: %f, training loss %f'
-                          % (epoch, step, global_step, train_accuracy, loss))
+
                     train_accuracies.append(train_accuracy)
                     train_losses.append(loss)
                     global_step += 1
 
-                print('\tTraining accuracy: %f, loss %f' % (np.mean(train_accuracies), np.mean(train_losses)))
+                mean_acc, mean_loss, summ = sess.run(train_mean,
+                                                     feed_dict={accuracies_input: train_accuracies,
+                                                                losses_input: train_losses})
+                print('Epoch %d: Training accuracy: %f, loss %f' % (epoch, mean_acc, mean_loss))
+                file_writer.add_summary(summ, epoch)
 
                 val_accuracies = []
                 val_losses = []
@@ -60,9 +97,12 @@ def run_trainer(model_ver, num_epocs, batch_size, dataset_path, model_name, run_
                     val_accuracy, loss, summary = model.evaluate(sess, batch_images, batch_labels)
                     val_accuracies.append(val_accuracy)
                     val_losses.append(loss)
-                    # file_writer.add_summary(summary, epoch)
 
-                print('\tValidation accuracy: %f, loss %f' % (np.mean(val_accuracies), np.mean(val_losses)))
+                mean_acc, mean_loss, summ = sess.run(val_mean,
+                                                     feed_dict={accuracies_input: val_accuracies,
+                                                                losses_input: val_losses})
+                print('Epoch %d: Validation accuracy: %f, loss %f' % (epoch, mean_acc, mean_loss))
+                file_writer.add_summary(summ, epoch)
 
                 saver.save(sess, save_path='./model/%s' % model_name, global_step=epoch)
         except KeyboardInterrupt:

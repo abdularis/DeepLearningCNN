@@ -15,6 +15,7 @@ class Model(object):
         self.model = self.x
         self.name_scope = None
         self.param_count = 0
+        self.stored_ops = {}
 
         self.is_compiled = False
         self.loss = None
@@ -31,7 +32,7 @@ class Model(object):
     def clear_name_scope(self):
         self.name_scope = None
 
-    def add(self, operation):
+    def add(self, operation, store_ref=False, name_ref=None):
         if self.is_compiled:
             return
 
@@ -41,6 +42,9 @@ class Model(object):
         else:
             self.model = operation.get_operation_graph(self.model)
         self.param_count += operation.param_count
+
+        if store_ref:
+            self.stored_ops[name_ref] = self.model
 
     def compile(self, optimizer):
         output_score = self.model
