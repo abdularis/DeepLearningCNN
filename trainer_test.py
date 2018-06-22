@@ -2,18 +2,18 @@
 # Created by abdularis on 22/05/18
 
 import argparse
+import importlib
+
 import tensorflow as tf
 import data_reader
-import cnn
 import numpy as np
-import trainer as mcfg
 
 
-def run_test_visual(dataset_dir, model_path):
+def run_test_visual(model_arch_module, dataset_dir, model_path):
     import data_visualizer as dv
     import data_config as cfg
 
-    model = cnn.build_model_arch(mcfg.INPUT_SHAPE, mcfg.NUM_CLASSES, 0)
+    model = model_arch_module.build_model_arch()
     _, _, test_data = data_reader.read_data_set_dir(dataset_dir, cfg.one_hot, 64)
     saver = tf.train.Saver()
     with tf.Session() as sess:
@@ -33,10 +33,10 @@ def run_test_visual(dataset_dir, model_path):
             dv.show_images_with_truth(images, pred_labels, truth_indexes, pred_indexes)
 
 
-def run_test(dataset_dir, model_path, top_k=1):
+def run_test(model_arch_module, dataset_dir, model_path, top_k=1):
     import data_config as cfg
 
-    model = cnn.build_model_arch(mcfg.INPUT_SHAPE, mcfg.NUM_CLASSES, 0)
+    model = model_arch_module.build_model_arch()
     _, _, test_data = data_reader.read_data_set_dir(dataset_dir, cfg.one_hot, 64)
     saver = tf.train.Saver()
     with tf.Session() as sess:
@@ -64,10 +64,22 @@ def run_test(dataset_dir, model_path, top_k=1):
         print("Overall accuracy: %f" % overall_acc)
 
 
-# if __name__ == '__main__':
-#     parser = argparse.ArgumentParser(description='Test model CNN')
-#     parser.add_argument('--dataset-dir', type=int, help='Direktori dataset', required=True)
-#     parser.add_argument('--model-path', type=int, help='Path model CNN', required=True)
-#     parser.add_argument('--visual', type=bool, help='Show visual', required=False)
-#
-#
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Test model CNN')
+    parser.add_argument('--model-module', type=str, help='Python module string untuk model cnn', required=True)
+    parser.add_argument('--dataset-dir', type=str, help='Direktori dataset', required=True)
+    parser.add_argument('--model-path', type=str, help='Path model CNN', required=True)
+    parser.add_argument('--type', type=str, help='Jalankan test visual atau cmd [cmd | vis]', default='cmd', required=False)
+
+    args = parser.parse_args()
+
+    print('Run trainer:')
+    print('\tModel module name: %s' % args.model_module)
+    print('\tDataset dir: %s' % args.dataset_dir)
+    print('\tModel path: %s' % args.model_path)
+    if args.type == 'vis':
+        print('================= Visualize =================')
+        run_test_visual(importlib.import_module(args.model_module), args.dataset_dir, args.model_path)
+    elif args.type == 'cmd':
+        print('Run test')
+        run_test(importlib.import_module(args.model_module), args.dataset_dir, args.model_path)
