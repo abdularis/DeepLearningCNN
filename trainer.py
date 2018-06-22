@@ -2,10 +2,7 @@
 # Created by abdularis on 16/05/18
 
 import argparse
-
-INPUT_SHAPE = [None, 128, 128, 3]
-NUM_CLASSES = 6
-LEARNING_RATE = 1e-4
+import importlib
 
 
 def get_mean_op():
@@ -37,17 +34,13 @@ def get_mean_op():
     return accuracies, losses, train_fetches, val_fetches
 
 
-def run_trainer(model_ver, num_epocs, batch_size, dataset_path, model_name, run_name):
+def run_trainer(model_arch_module, num_epocs, batch_size, dataset_path, model_name, run_name):
 
     import tensorflow as tf
-    import cnn
     import data_reader
     import data_config as cfg
 
-    if model_ver == 2:
-        model = cnn.build_model_arch_v2(INPUT_SHAPE, NUM_CLASSES, LEARNING_RATE)
-    else:
-        model = cnn.build_model_arch(INPUT_SHAPE, NUM_CLASSES, LEARNING_RATE)
+    model = model_arch_module.build_model_arch()
     train_data, val_data, test_data = data_reader.read_data_set_dir(dataset_path, cfg.one_hot, batch_size)
 
     accuracies_input, losses_input, train_mean, val_mean = get_mean_op()
@@ -114,7 +107,7 @@ def run_trainer(model_ver, num_epocs, batch_size, dataset_path, model_name, run_
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Latih model CNN')
-    parser.add_argument('--model-version', type=int, help='Versi model cnn', required=True)
+    parser.add_argument('--model-module', type=str, help='Python module string untuk model cnn', required=True)
     parser.add_argument('--num-epochs', type=int, help='Jumlah epoch', required=True)
     parser.add_argument('--batch-size', type=int, help='Ukuran batch/jumlah data per batch/iterasi', required=True)
     parser.add_argument('--dataset-path', type=str, help='Path ke dataset', required=True)
@@ -124,7 +117,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     print('Run trainer:')
-    print('\tModel version: %d' % args.model_version)
+    print('\tModel version: %s' % args.model_module)
     print('\tNum epoch: %d' % args.num_epochs)
     print('\tBatch size: %d' % args.batch_size)
     print('\tDataset path: %s' % args.dataset_path)
@@ -132,7 +125,7 @@ if __name__ == '__main__':
     print('\tRun name: %s' % args.run_name)
 
     run_trainer(
-        model_ver=args.model_version,
+        model_arch_module=importlib.import_module(args.model_module),
         num_epocs=args.num_epochs,
         batch_size=args.batch_size,
         dataset_path=args.dataset_path,
