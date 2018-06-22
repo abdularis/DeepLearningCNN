@@ -117,7 +117,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     print('Run trainer:')
-    print('\tModel version: %s' % args.model_module)
+    print('\tModel module name: %s' % args.model_module)
     print('\tNum epoch: %d' % args.num_epochs)
     print('\tBatch size: %d' % args.batch_size)
     print('\tDataset path: %s' % args.dataset_path)
