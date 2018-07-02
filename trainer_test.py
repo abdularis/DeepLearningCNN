@@ -14,7 +14,7 @@ def run_test_visual(model_arch_module, dataset_dir, model_path):
     import data_config as cfg
 
     model = model_arch_module.build_model_arch()
-    _, _, test_data = data_reader.read_data_set_dir(dataset_dir, cfg.one_hot, 64)
+    _, _, test_data = data_reader.read_data_set_dir(dataset_dir, cfg.one_hot, 24)
     saver = tf.train.Saver()
     with tf.Session() as sess:
         saver.restore(sess, model_path)
@@ -54,7 +54,7 @@ def run_test(model_arch_module, dataset_dir, model_path, top_k=1):
             if top_k == 1:
                 acc = (truth_indexes == pred_indexes).astype(np.float32).mean()
             else:
-                acc = tf.nn.in_top_k(pred_indexes, truth_indexes, k=top_k)
+                acc = tf.nn.in_top_k(pred, truth_indexes, k=top_k)
                 acc = sess.run(acc).astype(np.float32).mean()
 
             accuracies.append(acc)
@@ -69,17 +69,19 @@ if __name__ == '__main__':
     parser.add_argument('--model-module', type=str, help='Python module string untuk model cnn', required=True)
     parser.add_argument('--dataset-dir', type=str, help='Direktori dataset', required=True)
     parser.add_argument('--model-path', type=str, help='Path model CNN', required=True)
+    parser.add_argument('--top-k', type=int, help='Akurasi Top-K', default=1, required=False)
     parser.add_argument('--type', type=str, help='Jalankan test visual atau cmd [cmd | vis]', default='cmd', required=False)
 
     args = parser.parse_args()
 
-    print('Run trainer:')
+    print('Run model tester:')
     print('\tModel module name: %s' % args.model_module)
     print('\tDataset dir: %s' % args.dataset_dir)
     print('\tModel path: %s' % args.model_path)
+    print('\tTop-K: %d' % args.top_k)
     if args.type == 'vis':
         print('================= Visualize =================')
         run_test_visual(importlib.import_module(args.model_module), args.dataset_dir, args.model_path)
     elif args.type == 'cmd':
         print('Run test')
-        run_test(importlib.import_module(args.model_module), args.dataset_dir, args.model_path)
+        run_test(importlib.import_module(args.model_module), args.dataset_dir, args.model_path, top_k=args.top_k)
