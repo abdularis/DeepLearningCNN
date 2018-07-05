@@ -2,6 +2,7 @@
 # Created by abdularis on 16/05/18
 
 import tensorflow as tf
+from .operations import Dropout
 
 NOT_COMPILE_ERR_MSG = 'Model belum di compile: make sure you have call compile()'
 
@@ -25,6 +26,8 @@ class Model(object):
         self.train_summary = None
         self.val_summary = None
         self.test_summary = None
+        self.dropout_enabled = False
+        self.dropout_keep_prob = 1.0
 
     def use_name_scope(self, name):
         self.name_scope = "%s/" % name
@@ -32,22 +35,30 @@ class Model(object):
     def clear_name_scope(self):
         self.name_scope = None
 
+    def _add_operation(self, operation):
+        self.model = operation.get_operation_graph(self.model)
+        if isinstance(operation, Dropout):
+            self.dropout_enabled = True
+
     def add(self, operation, store_ref=False, name_ref=None):
         if self.is_compiled:
             return
 
         if self.name_scope:
             with tf.name_scope(self.name_scope):
-                self.model = operation.get_operation_graph(self.model)
+                self._add_operation(operation)
         else:
-            self.model = operation.get_operation_graph(self.model)
+            self._add_operation(operation)
         self.param_count += operation.param_count
 
         if store_ref:
             self.stored_ops[name_ref] = self.model
 
-    def compile(self, optimizer):
+    def compile(self, optimizer, dropout_keep_prob=1.0):
         output_score = self.model
+
+        if self.dropout_enabled:
+            self.dropout_keep_prob = dropout_keep_prob
 
         # cross entropy loss
         with tf.name_scope('cross_entropy'):
@@ -98,6 +109,8 @@ class Model(object):
 
         fetches = [self.prediction_accuracy, self.loss, self.optimizer]
         feed_dict = {self.x: x, self.y: y}
+        if self.dropout_enabled:
+            feed_dict[Dropout.keep_prob] = self.dropout_keep_prob
 
         if run_summary:
             fetches.append(self.train_summary)
@@ -112,10 +125,24 @@ class Model(object):
     def evaluate(self, session, x, y):
         if not self.is_compiled:
             raise ValueError(NOT_COMPILE_ERR_MSG)
-        # return accuracy, loss, summary
-        return session.run([self.prediction_accuracy, self.loss, self.val_summary], feed_dict={self.x: x, self.y: y})
 
-    def predict(self, session, x):
+        feed_dict = {self.x: x, self.y: y}
+        if self.dropout_enabled:
+            feed_dict[Dropout.keep_prob] = 1.0
+        # return accuracy, loss, summary
+        return session.run([self.prediction_accuracy, self.loss, self.val_summary], feed_dict=feed_dict)
+
+    def predict(self, session, x, extra_fetches=None, extra_feed_dict=None):
         if not self.is_compiled:
             raise ValueError(NOT_COMPILE_ERR_MSG)
-        return session.run(self.prediction, feed_dict={self.x: x})
+        fetches = [self.prediction]
+        feed_dict = {self.x: x}
+        if self.dropout_enabled:
+            feed_dict[Dropout.keep_prob] = 1.0
+
+        if extra_fetches:
+            fetches.extend(extra_fetches)
+        if extra_feed_dict:
+            feed_dict = {**feed_dict, **extra_feed_dict}
+
+        return session.run(fetches, feed_dict=feed_dict)

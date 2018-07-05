@@ -85,3 +85,14 @@ class FullyConnected(BaseOperation):
 
         self.param_count = _calc_param_count(weights.shape) + _calc_param_count(biases.shape)
         return layer
+
+
+class Dropout(BaseOperation):
+
+    keep_prob = tf.placeholder(tf.float32, name='input_keep_prob')
+
+    def __init__(self):
+        super().__init__()
+
+    def get_operation_graph(self, input):
+        return tf.nn.dropout(input, keep_prob=Dropout.keep_prob)
