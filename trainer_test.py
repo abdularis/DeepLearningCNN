@@ -48,7 +48,7 @@ def run_test(model_arch_module, dataset_dir, model_path, top_k=1):
             images = images / 255.0
             truth_indexes = np.argmax(one_hot, 1)
 
-            pred = model.predict(sess, images)
+            pred = model.predict(sess, images)[0]
             pred_indexes = np.argmax(pred, 1)
 
             if top_k == 1:
