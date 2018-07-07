@@ -26,7 +26,7 @@ def run_test_visual(model_arch_module, dataset_dir, model_path):
             images = images / 255.0
             truth_indexes = np.argmax(one_hot, 1)
 
-            pred = model.predict(sess, images)
+            pred = model.predict(sess, images)[0]
             pred_indexes = np.argmax(pred, 1)
             pred_labels = [labels[i] for i in pred_indexes]
 
