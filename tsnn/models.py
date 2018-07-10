@@ -140,9 +140,9 @@ class Model(object):
         if self.dropout_enabled:
             feed_dict[Dropout.keep_prob] = 1.0
 
-        if extra_fetches:
+        if extra_fetches is not None:
             fetches.extend(extra_fetches)
-        if extra_feed_dict:
+        if extra_feed_dict is not None:
             feed_dict = {**feed_dict, **extra_feed_dict}
 
         return session.run(fetches, feed_dict=feed_dict)

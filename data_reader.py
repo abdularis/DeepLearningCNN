@@ -80,10 +80,12 @@ class DirDataSet(BaseDataSet):
 
         self.file_paths, self.file_labels = shuffle(self.file_paths, self.file_labels)
         self.data_set_size = len(self.file_paths)
+        self.current_batch_file_paths = []
 
     def _read_images(self, start_idx, end_idx):
         imgs = []
-        for path in self.file_paths[start_idx:end_idx]:
+        self.current_batch_file_paths = self.file_paths[start_idx:end_idx]
+        for path in self.current_batch_file_paths:
             imgs.append(scipy.misc.imread(path, mode='RGB'))
         return np.array(imgs)
 
