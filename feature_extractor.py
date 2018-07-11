@@ -101,7 +101,7 @@ def count_relevant_items(truth, images):
 
 def calculate_precision_recall(test_dir_split, model_arch_module, model_path):
 
-    db = sqlite3.connect('images.db')
+    db = sqlite3.connect('images.db', detect_types=sqlite3.PARSE_DECLTYPES)
     model = model_arch_module.build_model_arch()
     extractor = model.stored_ops['features']
     data_test = DirDataSet(32, test_dir_split, cfg.one_hot)
