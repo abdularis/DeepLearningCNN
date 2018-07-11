@@ -1,20 +1,14 @@
 # feature_extractor.py.py
 # Created by abdularis on 02/07/18
 
-import matplotlib.pyplot as plt
+
 import numpy as np
-import scipy.misc
-import glob
 import sqlite3
 import pickle
-import database
-import importlib
 import tensorflow as tf
-import modelarch.cnnarch1_3
 import data_config as cfg
 import os
 import tqdm
-from tsnn.operations import Dropout
 from data_reader import DirDataSet
 
 
@@ -93,16 +87,6 @@ def cd(a, b):
     return 1 - (np.dot(a, b) / (np.sqrt((a**2).sum()) * np.sqrt((b**2).sum())))
 
 
-def show(query_img, images):
-    for i in range(45):
-        s = plt.subplot(9, 5, i + 1)
-        s.set_axis_off()
-        plt.imshow(images[i])
-    plt.imshow(query_img)
-    plt.title("query image")
-    plt.show()
-
-
 def save_obj(obj, name):
     with open('obj_' + name + ".pkl", 'wr') as f:
         pickle.dump(obj, f)
@@ -158,81 +142,8 @@ def calculate_precision_recall(test_dir_split, model_arch_module, model_path):
                 per_class_precisions[curr_truth].append(precision)
                 per_class_recalls[curr_truth].append(recall)
 
-                # print('truth ', curr_truth, ' lbls ', preds_labels[i], ' len ', len(db_images), " filtered ", len(filtered_results))
-                # filtered_results_images = [scipy.misc.imread(img[0].path) for img in filtered_results]
-                #
-                # show(images[i], filtered_results_images)
-
         save_obj(per_class_precisions, 'per_class_precisions')
         save_obj(per_class_recalls, 'per_class_recalls')
 
 
 # calculate_precision_recall('compute-engine/split/test', importlib.import_module('modelarch.cnnarch1_3'), 'compute-engine/model-1_3/cnnarch1_3-197')
-#
-#
-# model = modelarch.cnnarch1_3.build_model_arch()
-# sess = tf.Session()
-# saver = tf.train.Saver()
-# saver.restore(sess, 'compute-engine/model-1_3/cnnarch1_3-197')
-#
-# extractor = model.stored_ops['features']
-#
-# query_img = scipy.misc.imread('compute-engine/split/test/backpack/6.jpg') / 255.
-#
-# query_pred, query_features = model.predict(sess, [query_img], extra_fetches=[extractor])
-#
-# query_pred = query_pred[0]
-# query_features = query_features[0]
-#
-# ordered_pred_idx = np.argsort(query_pred)
-# query_labels = [cfg.one_hot_labels[ordered_pred_idx[-1]], cfg.one_hot_labels[ordered_pred_idx[-2]]]
-#
-# db = sqlite3.connect('images.db', detect_types=sqlite3.PARSE_DECLTYPES)
-#
-# db_images = db.execute('select * from images_repo where pred_labels like "%{}%" or pred_labels like "%{}%"'.format(query_labels[0], query_labels[1]))
-# db_images = [row for row in db_images]
-
-
-#
-#
-# def euc(a, b):
-#     return np.linalg.norm(a-b)
-#
-#
-# def imread(path):
-#     return np.array(scipy.misc.imread(path, mode='RGB'))
-#
-#
-# import random
-# img_paths = glob.glob('compute-engine/split/test/microwave/*.jpg')[:25]
-# img_paths.extend(glob.glob('compute-engine/split/test/teapot/*.jpg')[:25])
-#
-# # img_paths = glob.glob('compute-engine/split/test/*/*.jpg')
-# random.shuffle(img_paths)
-#
-# imgs = np.array([imread(p) for p in img_paths[:50]]) / 255.
-#
-# model = modelarch.cnnarch1_3.build_model_arch()
-# sess = tf.Session()
-# saver = tf.train.Saver()
-# saver.restore(sess, 'compute-engine/model-1_3/cnnarch1_3-186')
-#
-# extractor = model.stored_ops['features']
-#
-# imgs_features = sess.run(extractor, feed_dict={Dropout.keep_prob: 1.0, model.x: imgs})
-#
-# # query_img = imread(img_paths[0]) / 255.
-# query_img = imread('my-mug.jpg') / 255.
-# query_features = sess.run(extractor, feed_dict={Dropout.keep_prob: 1.0, model.x: [query_img]})[0]
-#
-# img_distances = [cd(query_features, f) for f in imgs_features]
-#
-# imgs_order = sorted(list(zip(img_distances, imgs)), key=lambda t: t[0])
-#
-#
-# def show():
-#     for i in range(len(imgs_order[:45])):
-#         s = plt.subplot(9, 5, i + 1)
-#         s.set_axis_off()
-#         plt.imshow(imgs_order[i][1])
-#
