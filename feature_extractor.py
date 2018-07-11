@@ -87,7 +87,7 @@ def cd(a, b):
 
 
 def save_obj(obj, name):
-    with open('obj_' + name + ".pkl", 'wr') as f:
+    with open('obj_' + name + ".pkl", 'wb') as f:
         pickle.dump(obj, f)
 
 
