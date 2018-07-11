@@ -25,14 +25,13 @@ class Image(object):
 
 def create_database(path):
     conn = sqlite3.connect(path, detect_types=sqlite3.PARSE_DECLTYPES)
-    if not os.path.exists(path):
-        conn.execute("CREATE TABLE images_repo ("
-                     "id integer primary key autoincrement,"
-                     "path text,"
-                     "truth text,"
-                     "pred_labels text,"
-                     "feature array)")
-        conn.commit()
+    conn.execute("CREATE TABLE images_repo ("
+                 "id integer primary key autoincrement,"
+                 "path text,"
+                 "truth text,"
+                 "pred_labels text,"
+                 "feature array)")
+    conn.commit()
     return conn
 
 
@@ -102,7 +101,7 @@ def count_relevant_items(truth, images):
 
 def calculate_precision_recall(test_dir_split, model_arch_module, model_path):
 
-    db = create_database('images.db')
+    db = sqlite3.connect('images.db')
     model = model_arch_module.build_model_arch()
     extractor = model.stored_ops['features']
     data_test = DirDataSet(32, test_dir_split, cfg.one_hot)
