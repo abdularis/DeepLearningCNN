@@ -1,0 +1,32 @@
+[
+  {
+    "name": "c-0.4",
+    "alg": "cos",
+    "threshold": 0.4
+  },
+  {
+    "name": "c-0.5",
+    "alg": "cos",
+    "threshold": 0.5
+  },
+  {
+    "name": "c-0.7",
+    "alg": "cos",
+    "threshold": 0.7
+  },
+  {
+    "name": "e-50",
+    "alg": "euc",
+    "threshold": 50.0
+  },
+  {
+    "name": "e-75",
+    "alg": "euc",
+    "threshold": 75.0
+  },
+  {
+    "name": "e-125",
+    "alg": "euc",
+    "threshold": 125.0
+  }
+]

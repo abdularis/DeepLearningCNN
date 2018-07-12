@@ -1,4 +1,4 @@
-# database.py
+# database_ext.py
 # Created by abdularis on 09/07/18
 
 import sqlite3
@@ -7,9 +7,6 @@ import io
 
 
 def adapt_array(arr):
-    """
-    http://stackoverflow.com/a/31312102/190597 (SoulNibbler)
-    """
     out = io.BytesIO()
     np.save(out, arr)
     out.seek(0)
@@ -26,4 +23,4 @@ def convert_array(text):
 sqlite3.register_adapter(np.ndarray, adapt_array)
 
 # Converts TEXT to np.array when selecting
-sqlite3.register_converter("array", convert_array)
+sqlite3.register_converter("ARRAY", convert_array)
