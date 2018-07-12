@@ -53,7 +53,7 @@ def build_model_arch():
 
     model.use_name_scope('fully_connected_2')
     model.add(FullyConnected(512))
-    model.add(Relu())
+    model.add(Relu(), store_ref=True, name_ref='features')
 
     model.use_name_scope('fully_connected_3')
     model.add(FullyConnected(NUM_CLASSES))
