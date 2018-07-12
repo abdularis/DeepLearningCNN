@@ -86,6 +86,37 @@ class PrecisionRecallCalcConfig(object):
         _save_obj(self.per_class_recalls, '%s_per_class_recalls' % self.prefix)
 
 
+def _f_measure(precision, recall):
+    return 2 * precision * recall / (precision + recall)
+
+
+def display_per_class_precision_recall(precision_dict, recalls_dict):
+    if len(precision_dict) != len(recalls_dict):
+        print('Precision and Recall dictionary should be in the same size!')
+        return
+
+    all_precisions = []
+    all_recalls = []
+    keys = precision_dict.keys()
+    print('Average per class precision & recall: %d classes' % len(precision_dict))
+    print('\t{:<15s} {:<12s} {:<12s} {:<12s}'.format('CLASS', 'PRECISION', 'RECALL', 'F-MEASURE'))
+    print('------------------------------------------------------------')
+    for key in keys:
+        all_precisions.extend(precision_dict[key])
+        all_recalls.extend(recalls_dict[key])
+
+        avg_precision = np.mean(precision_dict[key])
+        avg_recall = np.mean(recalls_dict[key])
+        f_measure = _f_measure(avg_precision, avg_recall)
+
+        print('\t{:<15s} {:<12f} {:<12f} {:<12f}'.format(key, avg_precision, avg_recall, f_measure))
+
+    p = np.mean(all_precisions)
+    r = np.mean(all_recalls)
+    print('------------------------------------------------------------')
+    print('\t{:<15s} {:<12f} {:<12f} {:<12f}'.format('ALL CLASSES', p, r, _f_measure(p, r)))
+
+
 def calculate_precision_recall(test_dir_split, model_arch_module, model_path, db_path, config_path):
 
     db = sqlite3.connect(db_path, detect_types=sqlite3.PARSE_DECLTYPES)
@@ -116,8 +147,10 @@ def calculate_precision_recall(test_dir_split, model_arch_module, model_path, db
                 for config in pr_configs:
                     config.calculate(db, curr_query_truth, curr_query_features, retrieved_gallery_images)
 
-            for config in pr_configs:
-                config.save()
+        for config in pr_configs:
+            config.save()
+            print('\t --- configuration name: %s ---' % config.prefix)
+            display_per_class_precision_recall(config.per_class_precisions, config.per_class_recalls)
 
 
 if __name__ == '__main__':
