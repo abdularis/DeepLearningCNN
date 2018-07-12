@@ -87,7 +87,6 @@ class PrecisionRecallCalcConfig(object):
 
 
 def calculate_precision_recall(test_dir_split, model_arch_module, model_path, db_path, config_path):
-    import distance_metrics as dm
 
     db = sqlite3.connect(db_path, detect_types=sqlite3.PARSE_DECLTYPES)
     model = model_arch_module.build_model_arch()
