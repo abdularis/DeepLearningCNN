@@ -41,7 +41,7 @@ def run_trainer(model_arch_module, num_epocs, batch_size, dataset_path, model_na
     import data_config as cfg
 
     model = model_arch_module.build_model_arch()
-    train_data, val_data, test_data = data_reader.read_data_set_dir(dataset_path, cfg.one_hot, batch_size)
+    train_data, val_data, _ = data_reader.read_data_set_dir(dataset_path, cfg.one_hot, batch_size)
 
     accuracies_input, losses_input, train_mean, val_mean = get_mean_op()
 
