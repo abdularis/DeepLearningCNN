@@ -59,7 +59,6 @@ def run_trainer(model_arch_module, num_epocs, batch_size, dataset_path, model_na
                 train_losses = []
                 for step in range(train_data.batch_count):
                     batch_images, batch_labels = train_data.next_batch()
-                    batch_images = batch_images / 255.0
 
                     if step % 10 == 0:
                         train_accuracy, loss, summary = model.train_step(sess, batch_images, batch_labels,
@@ -85,7 +84,6 @@ def run_trainer(model_arch_module, num_epocs, batch_size, dataset_path, model_na
                 val_losses = []
                 for step in range(val_data.batch_count):
                     batch_images, batch_labels = val_data.next_batch()
-                    batch_images = batch_images / 255.0
 
                     val_accuracy, loss, summary = model.evaluate(sess, batch_images, batch_labels)
                     val_accuracies.append(val_accuracy)

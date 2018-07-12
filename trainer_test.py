@@ -23,7 +23,6 @@ def run_test_visual(model_arch_module, dataset_dir, model_path):
 
         for step in range(test_data.batch_count):
             images, one_hot = test_data.next_batch()
-            images = images / 255.0
             truth_indexes = np.argmax(one_hot, 1)
 
             pred = model.predict(sess, images)[0]
@@ -45,7 +44,6 @@ def run_test(model_arch_module, dataset_dir, model_path, top_k=1):
         accuracies = []
         for step in range(test_data.batch_count):
             images, one_hot = test_data.next_batch()
-            images = images / 255.0
             truth_indexes = np.argmax(one_hot, 1)
 
             pred = model.predict(sess, images)[0]

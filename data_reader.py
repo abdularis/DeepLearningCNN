@@ -87,7 +87,7 @@ class DirDataSet(BaseDataSet):
         self.current_batch_file_paths = self.file_paths[start_idx:end_idx]
         for path in self.current_batch_file_paths:
             imgs.append(scipy.misc.imread(path, mode='RGB'))
-        return np.array(imgs)
+        return np.array(imgs) / 255.0
 
     def _on_next_batch(self, start_idx, end_idx):
         return self._read_images(start_idx, end_idx), np.array(self.file_labels[start_idx:end_idx])

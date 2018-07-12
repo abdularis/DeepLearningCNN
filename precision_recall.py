@@ -101,7 +101,6 @@ def calculate_precision_recall(test_dir_split, model_arch_module, model_path, db
 
         for _ in tqdm.tqdm(range(data_test.batch_count)):
             images, one_hot = data_test.next_batch()
-            images = images / 255.0
             truth_indexes = np.argmax(one_hot, 1)
 
             truth_labels = [cfg.one_hot_labels[i] for i in truth_indexes]
