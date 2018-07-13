@@ -41,7 +41,7 @@ def run_test(model_arch_module, dataset_dir, model_path, top_k=1):
     with tf.Session() as sess:
         saver.restore(sess, model_path)
 
-        accuracies = []
+        overall_correct_classification = 0.
         for step in range(test_data.batch_count):
             images, one_hot = test_data.next_batch()
             truth_indexes = np.argmax(one_hot, 1)
@@ -50,15 +50,15 @@ def run_test(model_arch_module, dataset_dir, model_path, top_k=1):
             pred_indexes = np.argmax(pred, 1)
 
             if top_k == 1:
-                acc = (truth_indexes == pred_indexes).astype(np.float32).mean()
+                correct_classification = (truth_indexes == pred_indexes).astype(np.float32)
             else:
-                acc = tf.nn.in_top_k(pred, truth_indexes, k=top_k)
-                acc = sess.run(acc).astype(np.float32).mean()
+                correct_classification = tf.nn.in_top_k(pred, truth_indexes, k=top_k)
+                correct_classification = sess.run(correct_classification).astype(np.float32)
 
-            accuracies.append(acc)
-            print("Step %d, accuracy %f" % (step, acc))
+            overall_correct_classification = overall_correct_classification + correct_classification.sum()
+            print("Step %d, accuracy %f" % (step, correct_classification.mean()))
 
-        overall_acc = np.mean(accuracies)
+        overall_acc = overall_correct_classification / float(test_data.data_set_size)
         print("Overall accuracy: %f" % overall_acc)
 
 
