@@ -1,4 +1,4 @@
-# cnnarch1_2.py
+# cnnarch1_do2.py
 # Created by abdularis on 05/07/18
 
 
