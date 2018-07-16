@@ -30,6 +30,7 @@ def export_model(model_arch_module, model_path, output_path):
         builder.add_meta_graph_and_variables(
             sess, [tf.saved_model.tag_constants.SERVING],
             signature_def_map={
+                'predict_images': pred_signature,
                 tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY: pred_signature
             }
         )
