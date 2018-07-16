@@ -89,7 +89,7 @@ class FullyConnected(BaseOperation):
 
 class Dropout(BaseOperation):
 
-    keep_prob = tf.placeholder(tf.float32, name='input_keep_prob')
+    keep_prob = tf.placeholder_with_default(1.0, shape=(), name='input_keep_prob')
 
     def __init__(self):
         super().__init__()
