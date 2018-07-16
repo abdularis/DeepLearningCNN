@@ -59,7 +59,7 @@ def _read_precision_recall_configs(config_path):
 
 
 def _save_obj(obj, name):
-    with open('obj_' + name + ".pkl", 'wb') as f:
+    with open(name + ".pkl", 'wb') as f:
         pickle.dump(obj, f)
 
 
