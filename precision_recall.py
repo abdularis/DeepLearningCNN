@@ -13,22 +13,8 @@ import data_config as cfg
 import tqdm
 from data_reader import DirDataSet
 import distance_metrics
+import image_search
 import database_ext
-
-
-class Image(object):
-    def __init__(self, path, truth, pred_labels, features):
-        self.path = path
-        self.truth = truth
-        self.pred_labels = pred_labels
-        self.features = features
-
-
-def _query_images(db, query_labels):
-    db_images = db.execute(
-        "SELECT path, truth, pred_labels, features FROM images_repo "
-        "WHERE pred_labels LIKE '%{}%' OR pred_labels LIKE '%{}%'".format(query_labels[0], query_labels[1]))
-    return [Image(row[0], row[1], row[2], row[3]) for row in db_images]
 
 
 def _query_items_count(db, truth):
@@ -142,7 +128,7 @@ def calculate_precision_recall(test_dir_split, model_arch_module, model_path, db
             for i in range(len(truth_labels)):
                 curr_query_features = features[i]
                 curr_query_truth = truth_labels[i]
-                retrieved_gallery_images = _query_images(db, preds_labels[i])
+                retrieved_gallery_images = image_search.query_images_in_test_db(db, preds_labels[i])
 
                 for config in pr_configs:
                     config.calculate(db, curr_query_truth, curr_query_features, retrieved_gallery_images)
