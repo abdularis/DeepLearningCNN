@@ -13,17 +13,24 @@ from data_reader import DirDataSet
 import database_ext
 
 
-def _create_database(path):
+def _create_database(path, is_test):
     if os.path.exists(path):
         os.remove(path)
 
     conn = sqlite3.connect(path, detect_types=sqlite3.PARSE_DECLTYPES)
-    conn.execute("CREATE TABLE images_repo ("
-                 "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                 "path TEXT,"
-                 "truth TEXT,"
-                 "pred_labels TEXT,"
-                 "features ARRAY)")
+    if is_test:
+        conn.execute("CREATE TABLE images_repo ("
+                     "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                     "path TEXT,"
+                     "truth TEXT,"
+                     "pred_labels TEXT,"
+                     "features ARRAY)")
+    else:
+        conn.execute("CREATE TABLE images_repo ("
+                     "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                     "path TEXT,"
+                     "pred_labels TEXT,"
+                     "features ARRAY)")
     conn.commit()
     return conn
 
@@ -34,10 +41,10 @@ def _insert_feature(db, record):
     db.commit()
 
 
-def extract_features(test_dir_split, model_arch_module, model_path, out_db_path):
+def extract_features(test_dir_split, model_arch_module, model_path, out_db_path, is_test):
     import tensorflow as tf
 
-    db = _create_database(out_db_path)
+    db = _create_database(out_db_path, is_test)
     model = model_arch_module.build_model_arch()
     extractor = model.stored_ops['features']
     data_test = DirDataSet(64, test_dir_split, cfg.one_hot)
@@ -67,6 +74,7 @@ if __name__ == '__main__':
     parser.add_argument('--test-dataset-dir', type=str, help='Direktori dataset', required=True)
     parser.add_argument('--model-path', type=str, help='Path model CNN', required=True)
     parser.add_argument('--out-db-path', type=str, help='Output database path', required=True)
+    parser.add_argument('--test', action='store_true')
 
     args = parser.parse_args()
 
@@ -74,5 +82,6 @@ if __name__ == '__main__':
         args.test_dataset_dir,
         importlib.import_module(args.model_module),
         args.model_path,
-        args.out_db_path
+        args.out_db_path,
+        args.test
     )
