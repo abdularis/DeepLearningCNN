@@ -7,6 +7,7 @@ import importlib
 import os
 import numpy as np
 import sqlite3
+import pathlib
 import tqdm
 import data_config as cfg
 from data_reader import DirDataSet
@@ -41,6 +42,10 @@ def _insert_feature(db, record):
     db.commit()
 
 
+def _get_relative_paths(relative_to, paths):
+    return [str(pathlib.Path(path).relative_to(relative_to)) for path in paths]
+
+
 def extract_features(test_dir_split, model_arch_module, model_path, out_db_path, is_test):
     import tensorflow as tf
 
@@ -58,7 +63,7 @@ def extract_features(test_dir_split, model_arch_module, model_path, out_db_path,
             truth_indexes = np.argmax(one_hot, 1)
 
             truth_labels = [cfg.one_hot_labels[i] for i in truth_indexes]
-            file_paths = data_test.current_batch_file_paths
+            file_paths = _get_relative_paths(test_dir_split, data_test.current_batch_file_paths)
 
             preds_probs, features = model.predict(sess, images, extra_fetches=[extractor])
             preds_labels = [','.join(labels) for labels in cfg.get_predictions_labels(preds_probs, 2)]
