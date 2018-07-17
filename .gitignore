@@ -2,3 +2,4 @@
 /logs/*
 /model/*
 /compute-engine/*
+/web/static/gallery/*

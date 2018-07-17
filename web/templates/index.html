@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Search</title>
+    <style type="text/css">
+        body {
+            font-family: sans-serif;
+            margin: 0 auto;
+        }
+
+        .main-nav {
+            background: #f5f5f5;
+            text-align: center;
+            margin: 0 auto;
+            padding: 0.3em;
+        }
+
+        .main-nav > li {
+            display: inline;
+            margin-left: 1em;
+            margin-right: 1em;
+        }
+
+        .main-nav > li > a {
+            text-decoration: none;
+        }
+
+        #searchForm {
+            text-align: center;
+            margin: 1em;
+        }
+        #searchResult {
+            margin-top: 1em;
+            padding: 0.5em;
+            text-align: center;
+        }
+        .image-item {
+            display: inline-block;
+            margin: 0.3em;
+        }
+        .image-item > img {
+            width: 100px;
+            height: 100px;
+        }
+        #notif {
+            margin: 1em;
+            text-align: center;
+        }
+        #imageQuery {
+            text-align: center;
+        }
+        #searchResultEnd {
+            text-align: center;
+            padding: 0.3em;
+            color: #444;
+        }
+    </style>
+    <script src="{{ url_for('static', filename='js/jquery-3.2.1.min.js') }}"></script>
+</head>
+<body>
+    <ul class="main-nav">
+        <li>
+            <a href="/">Search</a>
+        </li>
+        <li>
+            <a href="#">Browse</a>
+        </li>
+    </ul>
+
+    <form id="searchForm" method="post" name="search">
+        <input id="image_file" type="file" name="image">
+        <input type="submit" value="Cari" id="submitButton">
+    </form>
+
+    <div id="imageQuery">
+        
+    </div>
+
+    <div id="notif">
+        
+    </div>
+
+    <div id="searchResult">
+        
+    </div>
+
+<script type="text/javascript">
+    var loadCount = 20;
+    var searchResult = null;
+    var resultStart = 0;
+    var resultEnd = 0;
+
+    function populateWithSearchResult() {
+        if (resultStart >= resultEnd) return;
+
+        for (var i = resultStart; i < resultEnd; i++) {
+            addImageResultItem(searchResult.result[i]);
+        }
+        resultStart = resultEnd;
+        resultEnd = Math.min(resultEnd + loadCount, searchResult.result.length);
+
+        if (resultStart >= resultEnd) {
+            var end = '<div id="searchResultEnd">' +
+                            '<p>Tidak ada lagi hasil.</p>' +
+                        '</div>'
+            $('#searchResult').append(end)
+            return;
+        }
+    }
+
+    function addImageResultItem(image_path) {
+        var template = '<div class="image-item">' +
+                        '<img src="static/gallery/'+ image_path +'">' + 
+                        '</div>';
+        $('#searchResult').append(template);
+    }
+
+    function showResultHeader(resp) {
+        var template = '<div>' +
+                        'Hasil klasifikasi: ' + resp.pred_labels + '<br>' +
+                        'Ditemukan ' + resp.result.length + ' hasil' +
+                        '</div><br>';
+        $('#searchResult').append(template);
+    }
+
+    $("form[name='search']").submit(function(event) {
+        var formData = new FormData($(this)[0]);
+         $.ajax({
+            url: "/api/search",
+            type: "POST",
+            data: formData,
+            async: true,
+            beforeSend: function() {
+                $('#notif').html("Sedang mencari...");
+            },
+            success: function (msg) {
+                $('#notif').html("");
+                $('#searchResult').html("");
+
+                showResultHeader(msg);
+                searchResult = msg;
+                resultStart = 0;
+                resultEnd = Math.min(50, msg.result.length);
+                populateWithSearchResult();
+            },
+            error: function() {
+                $('#notif').html("Telah terjadi error, silakan coba lagi.");
+            },
+            cache: false,
+            contentType: false,
+            processData: false
+        });
+        event.preventDefault();
+    });
+
+    function readURL(input) {
+
+      if (input.files && input.files[0]) {
+        var reader = new FileReader();
+
+        reader.onload = function(e) {
+          $('#imageQuery').html("<img src='"+ e.target.result +"' width=128 height=128>")
+        }
+
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    $("#image_file").change(function() {
+        readURL(this);
+    });
+
+    $(window).scroll(function() {
+        if($(window).scrollTop() == $(document).height() - $(window).height()) {
+            populateWithSearchResult();
+        }
+    });
+</script>
+</body>
+</html>
