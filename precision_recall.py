@@ -2,6 +2,7 @@
 # Created by abdularis on 11/07/18
 
 
+import os
 import argparse
 import importlib
 import json
@@ -67,9 +68,10 @@ class PrecisionRecallCalcConfig(object):
         self.per_class_precisions[query_truth].append(precision)
         self.per_class_recalls[query_truth].append(recall)
 
-    def save(self):
-        _save_obj(self.per_class_precisions, '%s_per_class_precisions' % self.prefix)
-        _save_obj(self.per_class_recalls, '%s_per_class_recalls' % self.prefix)
+    def save(self, out_dir):
+        os.makedirs(out_dir, exist_ok=True)
+        _save_obj(self.per_class_precisions, os.path.join(out_dir, '%s_per_class_precisions' % self.prefix))
+        _save_obj(self.per_class_recalls, os.path.join(out_dir, '%s_per_class_recalls' % self.prefix))
 
 
 def _f_measure(precision, recall):
@@ -103,7 +105,7 @@ def display_per_class_precision_recall(precision_dict, recalls_dict):
     print('\t{:<15s} {:<12f} {:<12f} {:<12f}'.format('ALL CLASSES', p, r, _f_measure(p, r)))
 
 
-def calculate_precision_recall(test_dir_split, model_arch_module, model_path, db_path, config_path):
+def calculate_precision_recall(test_dir_split, model_arch_module, model_path, db_path, config_path, out_dir):
 
     db = sqlite3.connect(db_path, detect_types=sqlite3.PARSE_DECLTYPES)
     model = model_arch_module.build_model_arch()
@@ -134,7 +136,7 @@ def calculate_precision_recall(test_dir_split, model_arch_module, model_path, db
                     config.calculate(db, curr_query_truth, curr_query_features, retrieved_gallery_images)
 
         for config in pr_configs:
-            config.save()
+            config.save(out_dir)
             print('\t --- configuration name: %s ---' % config.prefix)
             display_per_class_precision_recall(config.per_class_precisions, config.per_class_recalls)
 
@@ -146,6 +148,7 @@ if __name__ == '__main__':
     parser.add_argument('--model-path', type=str, help='Path model CNN', required=True)
     parser.add_argument('--config-path', type=str, help='Precision recall calculation configuration', required=True)
     parser.add_argument('--db-path', type=str, help='Image database path', required=True)
+    parser.add_argument('--out-dir', type=str, help='Direktori output data', required=True)
 
     args = parser.parse_args()
 
@@ -154,5 +157,6 @@ if __name__ == '__main__':
         importlib.import_module(args.model_module),
         args.model_path,
         args.db_path,
-        args.config_path
+        args.config_path,
+        args.out_dir
     )
