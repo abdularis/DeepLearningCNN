@@ -1,88 +1,38 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Image Search</title>
-    <style type="text/css">
-        body {
-            font-family: sans-serif;
-            margin: 0 auto;
-        }
+{% extends 'layout.html' %}
+{% block body %}
+<form id="searchForm" method="post" name="search">
 
-        .main-nav {
-            background: #f5f5f5;
-            text-align: center;
-            margin: 0 auto;
-            padding: 0.3em;
-        }
+    <div class="file-upload">
+        <button class="file-upload-btn" type="button" onclick="$('.file-upload-input').trigger( 'click' )">Pilih Image</button>
 
-        .main-nav > li {
-            display: inline;
-            margin-left: 1em;
-            margin-right: 1em;
-        }
-
-        .main-nav > li > a {
-            text-decoration: none;
-        }
-
-        #searchForm {
-            text-align: center;
-            margin: 1em;
-        }
-        #searchResult {
-            margin-top: 1em;
-            padding: 0.5em;
-            text-align: center;
-        }
-        .image-item {
-            display: inline-block;
-            margin: 0.3em;
-        }
-        .image-item > img {
-            width: 100px;
-            height: 100px;
-        }
-        #notif {
-            margin: 1em;
-            text-align: center;
-        }
-        #imageQuery {
-            text-align: center;
-        }
-        #searchResultEnd {
-            text-align: center;
-            padding: 0.3em;
-            color: #444;
-        }
-    </style>
-    <script src="{{ url_for('static', filename='js/jquery-3.2.1.min.js') }}"></script>
-</head>
-<body>
-    <ul class="main-nav">
-        <li>
-            <a href="/">Search</a>
-        </li>
-        <li>
-            <a href="#">Browse</a>
-        </li>
-    </ul>
-
-    <form id="searchForm" method="post" name="search">
-        <input id="image_file" type="file" name="image">
-        <input type="submit" value="Cari" id="submitButton">
-    </form>
-
-    <div id="imageQuery">
-        
+        <div class="image-upload-wrap">
+            <input class="file-upload-input" type='file' onchange="readURL(this);" accept="image/*"  name="image"/>
+        <div class="drag-text">
+            <h3>Drag & drop berkas image disini</h3>
+        </div>
+    </div>
+    <div class="file-upload-content">
+        <img class="file-upload-image" src="#" alt="your image" />
+        <div class="image-title-wrap">
+            <button type="button" onclick="removeUpload()" class="remove-image">Hapus <span class="image-title">Uploaded Image</span></button>
+        </div>
     </div>
 
-    <div id="notif">
-        
+        <input type="submit" value="Cari" class="submit-button">
     </div>
+</form>
 
-    <div id="searchResult">
-        
-    </div>
+<div id="imageQuery">
+    
+</div>
+
+<div id="notif">
+    
+</div>
+
+<div id="searchResult">
+    
+</div>
 
 <script type="text/javascript">
     var loadCount = 20;
@@ -117,7 +67,7 @@
 
     function showResultHeader(resp) {
         var template = '<div>' +
-                        'Hasil klasifikasi: ' + resp.pred_labels + '<br>' +
+                        'Hasil klasifikasi: <b>' + resp.pred_labels + '</b><br>' +
                         'Ditemukan ' + resp.result.length + ' hasil' +
                         '</div><br>';
         $('#searchResult').append(template);
@@ -153,28 +103,45 @@
         event.preventDefault();
     });
 
-    function readURL(input) {
-
-      if (input.files && input.files[0]) {
-        var reader = new FileReader();
-
-        reader.onload = function(e) {
-          $('#imageQuery').html("<img src='"+ e.target.result +"' width=128 height=128>")
-        }
-
-        reader.readAsDataURL(input.files[0]);
-      }
-    }
-
-    $("#image_file").change(function() {
-        readURL(this);
-    });
-
     $(window).scroll(function() {
         if($(window).scrollTop() == $(document).height() - $(window).height()) {
             populateWithSearchResult();
         }
     });
+
+    //
+    function readURL(input) {
+      if (input.files && input.files[0]) {
+
+        var reader = new FileReader();
+
+        reader.onload = function(e) {
+          $('.image-upload-wrap').hide();
+
+          $('.file-upload-image').attr('src', e.target.result);
+          $('.file-upload-content').show();
+
+          $('.image-title').html(input.files[0].name);
+        };
+
+        reader.readAsDataURL(input.files[0]);
+
+      } else {
+        removeUpload();
+      }
+    }
+
+    function removeUpload() {
+      $('.file-upload-input').replaceWith($('.file-upload-input').clone());
+      $('.file-upload-content').hide();
+      $('.image-upload-wrap').show();
+    }
+
+    $('.image-upload-wrap').bind('dragover', function () {
+        $('.image-upload-wrap').addClass('image-dropping');
+    });
+    $('.image-upload-wrap').bind('dragleave', function () {
+        $('.image-upload-wrap').removeClass('image-dropping');
+    });
 </script>
-</body>
-</html>
+{% endblock %}

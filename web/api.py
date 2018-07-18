@@ -40,13 +40,8 @@ def search():
         f.save('/home/abdularis/image_query.jpg')
 
         img = scipy.misc.imread('/home/abdularis/image_query.jpg')
-        img = transform.resize(img, (128, 128))
 
-        probs, features = model_client.inference(np.array([img], dtype=np.float32))
-        probs_labels = cfg.get_predictions_labels([probs], 2)[0]
-        images_result = image_search.query_images(get_db(), probs_labels)
-        images_result = distance_metrics.CosineDistance().filter(features, images_result)
-        images_result = [img[0].path for img in images_result]
+        probs_labels, images_result = image_search.search_image(img, get_db())
 
         return jsonify(pred_labels=probs_labels[0],
                        result=images_result)
@@ -54,9 +49,15 @@ def search():
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', title='Image Search')
+
+
+@app.route('/browse')
+def browse():
+    return render_template('browse.html', title='Browse Gallery')
 
 
 app.run(
+    host='0.0.0.0',
     debug=True
 )
