@@ -121,11 +121,14 @@ def export_per_class_precision_recall(precision_dict, recalls_dict, file_name, d
         print('\t{:<15s} {:<12f} {:<12f} {:<12f}'.format('ALL CLASSES', p, r, f))
 
 
-def calculate_precision_recall(test_dir_split, model_arch_module, model_path, db_path, config_path, out_dir):
+def calculate_precision_recall(test_dir_split, model_arch_module, model_path, ext_layer, db_path, config_path, out_dir):
 
     db = sqlite3.connect(db_path, detect_types=sqlite3.PARSE_DECLTYPES)
     model = model_arch_module.build_model_arch()
-    extractor = model.stored_ops['features']
+    extractor = model.stored_ops.get(ext_layer)
+    if not extractor:
+        print('Tidak ada layer extractor %s. keluar.' % ext_layer)
+        return
     data_test = DirDataSet(64, test_dir_split, cfg.one_hot)
 
     pr_configs = _read_precision_recall_configs(config_path)
@@ -161,6 +164,7 @@ if __name__ == '__main__':
     parser.add_argument('--model-module', type=str, help='Python module string untuk model cnn', required=True)
     parser.add_argument('--test-dataset-dir', type=str, help='Direktori dataset', required=True)
     parser.add_argument('--model-path', type=str, help='Path model CNN', required=True)
+    parser.add_argument('--ext-layer', type=str, help='Nama layer untuk exktrasi fitur', required=True)
     parser.add_argument('--config-path', type=str, help='Precision recall calculation configuration', required=True)
     parser.add_argument('--db-path', type=str, help='Image database path', required=True)
     parser.add_argument('--out-dir', type=str, help='Direktori output data', required=True)
@@ -171,6 +175,7 @@ if __name__ == '__main__':
         args.test_dataset_dir,
         importlib.import_module(args.model_module),
         args.model_path,
+        args.ext_layer,
         args.db_path,
         args.config_path,
         args.out_dir
