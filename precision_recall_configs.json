@@ -1,5 +1,20 @@
 [
   {
+    "name": "c-0.1",
+    "alg": "cos",
+    "threshold": 0.1
+  },
+  {
+    "name": "c-0.2",
+    "alg": "cos",
+    "threshold": 0.2
+  },
+  {
+    "name": "c-0.3",
+    "alg": "cos",
+    "threshold": 0.3
+  },
+  {
     "name": "c-0.4",
     "alg": "cos",
     "threshold": 0.4
@@ -10,9 +25,74 @@
     "threshold": 0.5
   },
   {
+    "name": "c-0.6",
+    "alg": "cos",
+    "threshold": 0.6
+  },
+  {
     "name": "c-0.7",
     "alg": "cos",
     "threshold": 0.7
+  },
+  {
+    "name": "c-0.8",
+    "alg": "cos",
+    "threshold": 0.8
+  },
+  {
+    "name": "c-0.9",
+    "alg": "cos",
+    "threshold": 0.9
+  },
+  {
+    "name": "c-1.0",
+    "alg": "cos",
+    "threshold": 1.0
+  },
+  {
+    "name": "c-1.1",
+    "alg": "cos",
+    "threshold": 1.1
+  },
+  {
+    "name": "c-1.2",
+    "alg": "cos",
+    "threshold": 1.2
+  },
+  {
+    "name": "c-1.3",
+    "alg": "cos",
+    "threshold": 1.3
+  },
+  {
+    "name": "c-1.4",
+    "alg": "cos",
+    "threshold": 1.4
+  },
+  {
+    "name": "c-1.5",
+    "alg": "cos",
+    "threshold": 1.5
+  },
+  {
+    "name": "e-10",
+    "alg": "euc",
+    "threshold": 10.0
+  },
+  {
+    "name": "e-20",
+    "alg": "euc",
+    "threshold": 20.0
+  },
+  {
+    "name": "e-30",
+    "alg": "euc",
+    "threshold": 30.0
+  },
+  {
+    "name": "e-40",
+    "alg": "euc",
+    "threshold": 40.0
   },
   {
     "name": "e-50",
@@ -20,13 +100,53 @@
     "threshold": 50.0
   },
   {
-    "name": "e-75",
+    "name": "e-60",
     "alg": "euc",
-    "threshold": 75.0
+    "threshold": 60.0
   },
   {
-    "name": "e-125",
+    "name": "e-70",
     "alg": "euc",
-    "threshold": 125.0
+    "threshold": 70.0
+  },
+  {
+    "name": "e-80",
+    "alg": "euc",
+    "threshold": 80.0
+  },
+  {
+    "name": "e-90",
+    "alg": "euc",
+    "threshold": 90.0
+  },
+  {
+    "name": "e-100",
+    "alg": "euc",
+    "threshold": 100.0
+  },
+  {
+    "name": "e-110",
+    "alg": "euc",
+    "threshold": 110.0
+  },
+  {
+    "name": "e-120",
+    "alg": "euc",
+    "threshold": 120.0
+  },
+  {
+    "name": "e-130",
+    "alg": "euc",
+    "threshold": 130.0
+  },
+  {
+    "name": "e-140",
+    "alg": "euc",
+    "threshold": 140.0
+  },
+  {
+    "name": "e-150",
+    "alg": "euc",
+    "threshold": 150.0
   }
 ]
