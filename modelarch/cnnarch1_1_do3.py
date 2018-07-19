@@ -37,7 +37,7 @@ def build_model_arch():
 
     model.use_name_scope('conv_5')
     model.add(Convolution(128, (3, 3)))
-    model.add(Relu())
+    model.add(Relu(), store_ref=True, name_ref='features-cn5')
     model.add(MaxPooling())
 
     model.use_name_scope('conv_6')
@@ -47,16 +47,16 @@ def build_model_arch():
     model.add(MaxPooling())
 
     model.use_name_scope('flatten')
-    model.add(Flatten())
+    model.add(Flatten(), store_ref=True, name_ref='features-flt')
 
     model.use_name_scope('fully_connected_1')
     model.add(FullyConnected(512))
-    model.add(Relu())
+    model.add(Relu(), store_ref=True, name_ref='features-fc1')
     model.add(Dropout())
 
     model.use_name_scope('fully_connected_2')
     model.add(FullyConnected(1024))
-    model.add(Relu(), store_ref=True, name_ref='features')
+    model.add(Relu(), store_ref=True, name_ref='features-fc2')
     model.add(Dropout())
 
     model.use_name_scope('fully_connected_3')

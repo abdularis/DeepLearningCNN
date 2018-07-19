@@ -46,12 +46,15 @@ def _get_relative_paths(relative_to, paths):
     return [str(pathlib.Path(path).relative_to(relative_to)) for path in paths]
 
 
-def extract_features(test_dir_split, model_arch_module, model_path, out_db_path, is_test):
+def extract_features(test_dir_split, model_arch_module, model_path, ext_layer, out_db_path, is_test):
     import tensorflow as tf
 
-    db = _create_database(out_db_path, is_test)
     model = model_arch_module.build_model_arch()
-    extractor = model.stored_ops['features']
+    extractor = model.stored_ops.get(ext_layer)
+    if not extractor:
+        print('Tidak ada layer extractor %s. keluar.' % ext_layer)
+        return
+    db = _create_database(out_db_path, is_test)
     data_test = DirDataSet(64, test_dir_split, cfg.one_hot)
 
     saver = tf.train.Saver()
@@ -78,6 +81,7 @@ if __name__ == '__main__':
     parser.add_argument('--model-module', type=str, help='Python module string untuk model cnn', required=True)
     parser.add_argument('--test-dataset-dir', type=str, help='Direktori dataset', required=True)
     parser.add_argument('--model-path', type=str, help='Path model CNN', required=True)
+    parser.add_argument('--ext-layer', type=str, help='Nama layer untuk exktrasi fitur', required=True)
     parser.add_argument('--out-db-path', type=str, help='Output database path', required=True)
     parser.add_argument('--test', action='store_true')
 
@@ -87,6 +91,7 @@ if __name__ == '__main__':
         args.test_dataset_dir,
         importlib.import_module(args.model_module),
         args.model_path,
+        args.ext_layer,
         args.out_db_path,
         args.test
     )
