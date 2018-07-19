@@ -1,4 +1,83 @@
 {% extends 'layout.html' %}
 {% block body %}
+<style type="text/css">
+    .box-container {
+        text-align: center;
+    }
 
+    .box-item {
+        display: inline-block;
+        margin-right: 0.5em;
+        margin-top: 1em;
+        padding: 0.2em;
+        background: white;
+        border-radius: 0.3em;
+    }
+
+    .box-item > img {
+        width: 128px;
+        height: 128px;
+    }
+
+    .box-item > p {
+        color: #353535;
+    }
+</style>
+
+<div class="box-container">
+    <div class="box-item">
+        <img src="{{ url_for('static', filename='backpack.jpg') }}">
+        <p><a href="{{ url_for('browse', class='backpack') }}">backpack</a></p>
+    </div>
+
+    <div class="box-item">
+        <img src="{{ url_for('static', filename='microwave.jpg') }}">
+        <p><a href="{{ url_for('browse', class='microwave') }}">microwave</a></p>
+    </div>
+
+    <div class="box-item">
+        <img src="{{ url_for('static', filename='mug.jpg') }}">
+        <p><a href="{{ url_for('browse', class='mug') }}">mug</a></p>
+    </div>
+
+    <div class="box-item">
+        <img src="{{ url_for('static', filename='shoe.jpg') }}">
+        <p><a href="{{ url_for('browse', class='shoe') }}">shoe</a></p>
+    </div>
+
+    <div class="box-item">
+        <img src="{{ url_for('static', filename='teapot.jpg') }}">
+        <p><a href="{{ url_for('browse', class='teapot') }}">teapot</a></p>
+    </div>
+
+    <div class="box-item">
+        <img src="{{ url_for('static', filename='wristwatch.jpg') }}">
+        <p><a href="{{ url_for('browse', class='wristwatch') }}">wristwatch</a></p>
+    </div>
+</div>
+
+<div id="searchResult">
+</div>
+
+<script src="{{ url_for('static', filename='js/img_loader.js') }}"></script>
+{% if img_path_list %}
+<script type="text/javascript">
+    imgLoader.searchResult = {
+        result: [
+                {% for path in img_path_list %}
+                    '{{ path }}',
+                {% endfor %}
+                ]
+    };
+
+    var temp = '<p>' +
+                'Terdapat <b>' + imgLoader.searchResult.result.length + '</b> data citra pada kategori ' + '<b>{{ category }}</b>' +
+                '</p>';
+    $('#searchResult').append(temp);
+
+    imgLoader.resultStart = 0;
+    imgLoader.resultEnd = Math.min(50, imgLoader.searchResult.result.length);
+    populateWithSearchResult();
+</script>
+{% endif %}
 {% endblock %}

@@ -34,36 +34,24 @@
     
 </div>
 
+<script src="{{ url_for('static', filename='js/img_loader.js') }}"></script>
 <script type="text/javascript">
-    var loadCount = 20;
-    var searchResult = null;
-    var resultStart = 0;
-    var resultEnd = 0;
 
-    function populateWithSearchResult() {
-        if (resultStart >= resultEnd) return;
-
-        for (var i = resultStart; i < resultEnd; i++) {
-            addImageResultItem(searchResult.result[i]);
-        }
-        resultStart = resultEnd;
-        resultEnd = Math.min(resultEnd + loadCount, searchResult.result.length);
-
-        if (resultStart >= resultEnd) {
-            var end = '<div id="searchResultEnd">' +
-                            '<p>Tidak ada lagi hasil.</p>' +
-                        '</div>'
-            $('#searchResult').append(end)
-            return;
-        }
-    }
-
-    function addImageResultItem(image_path) {
-        var template = '<div class="image-item">' +
-                        '<img src="static/gallery/'+ image_path +'">' + 
-                        '</div>';
-        $('#searchResult').append(template);
-    }
+    {% if img_path_list %}
+        imgLoader.searchResult = {
+                                    pred_labels: '{{ pred_labels }}',
+                                    result: [
+                                            {% for path in img_path_list %}
+                                                '{{ path }}',
+                                            {% endfor %}
+                                            ]
+                                };
+        showQueryImage('{{ gallery_path }}', '{{ gallery_path }}');
+        showResultHeader(imgLoader.searchResult);
+        imgLoader.resultStart = 0;
+        imgLoader.resultEnd = Math.min(50, imgLoader.searchResult.result.length);
+        populateWithSearchResult();
+    {% endif %}
 
     function showResultHeader(resp) {
         var template = '<div>' +
@@ -88,9 +76,9 @@
                 $('#searchResult').html("");
 
                 showResultHeader(msg);
-                searchResult = msg;
-                resultStart = 0;
-                resultEnd = Math.min(50, msg.result.length);
+                imgLoader.searchResult = msg;
+                imgLoader.resultStart = 0;
+                imgLoader.resultEnd = Math.min(50, msg.result.length);
                 populateWithSearchResult();
             },
             error: function() {
@@ -103,12 +91,6 @@
         event.preventDefault();
     });
 
-    $(window).scroll(function() {
-        if($(window).scrollTop() == $(document).height() - $(window).height()) {
-            populateWithSearchResult();
-        }
-    });
-
     //
     function readURL(input) {
       if (input.files && input.files[0]) {
@@ -116,12 +98,7 @@
         var reader = new FileReader();
 
         reader.onload = function(e) {
-          $('.image-upload-wrap').hide();
-
-          $('.file-upload-image').attr('src', e.target.result);
-          $('.file-upload-content').show();
-
-          $('.image-title').html(input.files[0].name);
+          showQueryImage(e.target.result, input.files[0].name);
         };
 
         reader.readAsDataURL(input.files[0]);
@@ -129,6 +106,15 @@
       } else {
         removeUpload();
       }
+    }
+
+    function showQueryImage(src, name) {
+        $('.image-upload-wrap').hide();
+
+          $('.file-upload-image').attr('src', src);
+          $('.file-upload-content').show();
+
+          $('.image-title').html(name);
     }
 
     function removeUpload() {
