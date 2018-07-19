@@ -34,7 +34,7 @@ def get_mean_op():
     return accuracies, losses, train_fetches, val_fetches
 
 
-def run_trainer(model_arch_module, num_epocs, batch_size, dataset_path, model_name, run_name):
+def run_trainer(model_arch_module, num_epochs, batch_size, dataset_path, model_name, run_name):
 
     import tensorflow as tf
     import data_reader
@@ -53,7 +53,7 @@ def run_trainer(model_arch_module, num_epocs, batch_size, dataset_path, model_na
         file_writer.add_graph(sess.graph)
 
         try:
-            for epoch in range(num_epocs):
+            for epoch in range(num_epochs):
 
                 train_accuracies = []
                 train_losses = []
@@ -124,7 +124,7 @@ if __name__ == '__main__':
 
     run_trainer(
         model_arch_module=importlib.import_module(args.model_module),
-        num_epocs=args.num_epochs,
+        num_epochs=args.num_epochs,
         batch_size=args.batch_size,
         dataset_path=args.dataset_path,
         model_name=args.model_name,
