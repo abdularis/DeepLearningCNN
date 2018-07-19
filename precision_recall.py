@@ -126,7 +126,7 @@ def calculate_precision_recall(test_dir_split, model_arch_module, model_path, ex
     db = sqlite3.connect(db_path, detect_types=sqlite3.PARSE_DECLTYPES)
     model = model_arch_module.build_model_arch()
     extractor = model.stored_ops.get(ext_layer)
-    if not extractor:
+    if extractor is None:
         print('Tidak ada layer extractor %s. keluar.' % ext_layer)
         return
     data_test = DirDataSet(64, test_dir_split, cfg.one_hot)

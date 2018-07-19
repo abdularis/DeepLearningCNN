@@ -51,7 +51,7 @@ def extract_features(test_dir_split, model_arch_module, model_path, ext_layer, o
 
     model = model_arch_module.build_model_arch()
     extractor = model.stored_ops.get(ext_layer)
-    if not extractor:
+    if extractor is None:
         print('Tidak ada layer extractor %s. keluar.' % ext_layer)
         return
     db = _create_database(out_db_path, is_test)
