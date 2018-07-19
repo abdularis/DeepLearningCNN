@@ -50,31 +50,6 @@
     "threshold": 1.0
   },
   {
-    "name": "c-1.1",
-    "alg": "cos",
-    "threshold": 1.1
-  },
-  {
-    "name": "c-1.2",
-    "alg": "cos",
-    "threshold": 1.2
-  },
-  {
-    "name": "c-1.3",
-    "alg": "cos",
-    "threshold": 1.3
-  },
-  {
-    "name": "c-1.4",
-    "alg": "cos",
-    "threshold": 1.4
-  },
-  {
-    "name": "c-1.5",
-    "alg": "cos",
-    "threshold": 1.5
-  },
-  {
     "name": "e-10",
     "alg": "euc",
     "threshold": 10.0
@@ -123,30 +98,5 @@
     "name": "e-100",
     "alg": "euc",
     "threshold": 100.0
-  },
-  {
-    "name": "e-110",
-    "alg": "euc",
-    "threshold": 110.0
-  },
-  {
-    "name": "e-120",
-    "alg": "euc",
-    "threshold": 120.0
-  },
-  {
-    "name": "e-130",
-    "alg": "euc",
-    "threshold": 130.0
-  },
-  {
-    "name": "e-140",
-    "alg": "euc",
-    "threshold": 140.0
-  },
-  {
-    "name": "e-150",
-    "alg": "euc",
-    "threshold": 150.0
   }
 ]
