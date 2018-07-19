@@ -72,23 +72,30 @@ class PrecisionRecallCalcConfig(object):
         os.makedirs(out_dir, exist_ok=True)
         _save_obj(self.per_class_precisions, os.path.join(out_dir, '%s_per_class_precisions' % self.prefix))
         _save_obj(self.per_class_recalls, os.path.join(out_dir, '%s_per_class_recalls' % self.prefix))
+        export_per_class_precision_recall(self.per_class_precisions, self.per_class_recalls, os.path.join(out_dir, '%s_precision_recall' % self.prefix))
 
 
 def _f_measure(precision, recall):
     return 2 * precision * recall / (precision + recall)
 
 
-def display_per_class_precision_recall(precision_dict, recalls_dict):
+def export_per_class_precision_recall(precision_dict, recalls_dict, file_name, display=True):
     if len(precision_dict) != len(recalls_dict):
         print('Precision and Recall dictionary should be in the same size!')
         return
 
+    csv = open('%s.csv' % file_name, 'w')
+    csv.write('Kategori,Precision,Recall,F-measure\n')
+
     all_precisions = []
     all_recalls = []
     keys = precision_dict.keys()
-    print('Average per class precision & recall: %d classes' % len(precision_dict))
-    print('\t{:<15s} {:<12s} {:<12s} {:<12s}'.format('CLASS', 'PRECISION', 'RECALL', 'F-MEASURE'))
-    print('------------------------------------------------------------')
+
+    if display:
+        print('Average per class precision & recall: %d classes' % len(precision_dict))
+        print('\t{:<15s} {:<12s} {:<12s} {:<12s}'.format('CLASS', 'PRECISION', 'RECALL', 'F-MEASURE'))
+        print('------------------------------------------------------------')
+
     for key in keys:
         all_precisions.extend(precision_dict[key])
         all_recalls.extend(recalls_dict[key])
@@ -97,12 +104,21 @@ def display_per_class_precision_recall(precision_dict, recalls_dict):
         avg_recall = np.mean(recalls_dict[key])
         f_measure = _f_measure(avg_precision, avg_recall)
 
-        print('\t{:<15s} {:<12f} {:<12f} {:<12f}'.format(key, avg_precision, avg_recall, f_measure))
+        csv.write('%s,%f,%f,%f\n' % (key, float(avg_precision), float(avg_recall), f_measure))
+
+        if display:
+            print('\t{:<15s} {:<12f} {:<12f} {:<12f}'.format(key, avg_precision, avg_recall, f_measure))
 
     p = np.mean(all_precisions)
     r = np.mean(all_recalls)
-    print('------------------------------------------------------------')
-    print('\t{:<15s} {:<12f} {:<12f} {:<12f}'.format('ALL CLASSES', p, r, _f_measure(p, r)))
+    f = _f_measure(p, r)
+
+    csv.write('%s,%f,%f,%f\n' % ('Semua Kategori', float(p), float(r), f))
+    csv.close()
+
+    if display:
+        print('------------------------------------------------------------')
+        print('\t{:<15s} {:<12f} {:<12f} {:<12f}'.format('ALL CLASSES', p, r, f))
 
 
 def calculate_precision_recall(test_dir_split, model_arch_module, model_path, db_path, config_path, out_dir):
@@ -136,9 +152,8 @@ def calculate_precision_recall(test_dir_split, model_arch_module, model_path, db
                     config.calculate(db, curr_query_truth, curr_query_features, retrieved_gallery_images)
 
         for config in pr_configs:
-            config.save(out_dir)
             print('\t --- configuration name: %s ---' % config.prefix)
-            display_per_class_precision_recall(config.per_class_precisions, config.per_class_recalls)
+            config.save(out_dir)
 
 
 if __name__ == '__main__':
