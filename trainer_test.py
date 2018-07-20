@@ -45,7 +45,7 @@ def run_test(model_arch_module, dataset_dir, model_path, result_dir, top_k=1):
         saver.restore(sess, model_path)
 
         overall_truth_indices = []
-        overall_pred_indices = []
+        overall_pred_probs = []
         overall_correct_classification = 0.
         for step in range(test_data.batch_count):
             images, one_hot = test_data.next_batch()
@@ -61,7 +61,7 @@ def run_test(model_arch_module, dataset_dir, model_path, result_dir, top_k=1):
                 correct_classification = sess.run(correct_classification).astype(np.float32)
 
             overall_truth_indices.extend(truth_indexes)
-            overall_pred_indices.extend(pred_indexes)
+            overall_pred_probs.extend(pred)
             overall_correct_classification = overall_correct_classification + correct_classification.sum()
             print("Step %d, accuracy %f" % (step, correct_classification.mean()))
 
@@ -70,8 +70,8 @@ def run_test(model_arch_module, dataset_dir, model_path, result_dir, top_k=1):
 
         with open(os.path.join(result_dir, 'truth_indices.pkl'), 'wb') as f:
             pickle.dump(overall_truth_indices, f)
-        with open(os.path.join(result_dir, 'pred_indices.pkl'), 'wb') as f:
-            pickle.dump(overall_pred_indices, f)
+        with open(os.path.join(result_dir, 'pred_probs.pkl'), 'wb') as f:
+            pickle.dump(overall_pred_probs, f)
 
 
 if __name__ == '__main__':
