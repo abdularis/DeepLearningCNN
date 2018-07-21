@@ -17,7 +17,7 @@ def build_model_arch():
     # model construction
     model = Model(input_shape=INPUT_SHAPE, num_classes=NUM_CLASSES)
     model.use_name_scope('conv_1')
-    model.add(Convolution(32, (3, 3)))
+    model.add(Convolution(64, (3, 3)))
     model.add(Relu())
 
     model.use_name_scope('conv_2')
@@ -55,16 +55,6 @@ def build_model_arch():
     model.use_name_scope('conv_9')
     model.add(Convolution(256, (3, 3)))
     model.add(Relu())
-
-    model.use_name_scope('conv_10')
-    model.add(Convolution(256, (3, 3)))
-    model.add(Relu())
-    model.add(MaxPooling())
-
-    model.use_name_scope('conv_11')
-    model.add(Convolution(256, (3, 3)))
-    model.add(Relu())
-    model.add(MaxPooling())
 
     model.use_name_scope('flatten')
     model.add(Flatten(), store_ref=True, name_ref='features-flt')
