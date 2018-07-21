@@ -1,4 +1,4 @@
-# cnnarch2_do3.py
+# cnnarch2_do2.py
 # Created by abdularis on 21/07/18
 
 
@@ -64,7 +64,6 @@ def build_model_arch():
     model.use_name_scope('conv_11')
     model.add(Convolution(256, (3, 3)))
     model.add(Relu())
-    model.add(Dropout())
     model.add(MaxPooling())
 
     model.use_name_scope('flatten')
