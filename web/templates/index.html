@@ -1,5 +1,11 @@
 {% extends 'layout.html' %}
 {% block body %}
+<style type="text/css">
+.param-section {
+    margin-top: 1em;
+}    
+</style>
+
 <form id="searchForm" method="post" name="search">
 
     <div class="file-upload">
@@ -17,6 +23,38 @@
             <button type="button" onclick="removeUpload()" class="remove-image">Hapus <span class="image-title">Uploaded Image</span></button>
         </div>
     </div>
+
+        <div class="param-section">
+            <label for="metric">Metric</label>
+            <select name="metric">
+                <option value="c">Cosine</option>
+                <option value="e">Euclidean</option>
+            </select>
+
+            <label for="threshold">Threshold</label>
+            <select name="threshold">
+                <option>0.1</option>
+                <option>0.2</option>
+                <option>0.3</option>
+                <option>0.4</option>
+                <option>0.5</option>
+                <option>0.6</option>
+                <option>0.7</option>
+                <option>0.8</option>
+                <option>0.9</option>
+                <option>1.0</option>
+                <option>10.0</option>
+                <option>20.0</option>
+                <option>30.0</option>
+                <option>40.0</option>
+                <option>50.0</option>
+                <option>60.0</option>
+                <option>70.0</option>
+                <option>80.0</option>
+                <option>90.0</option>
+                <option>100.0</option>
+            </select>
+        </div>
 
         <input type="submit" value="Cari" class="submit-button">
     </div>

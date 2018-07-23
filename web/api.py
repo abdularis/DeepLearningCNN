@@ -37,7 +37,11 @@ def search():
 
         img = scipy.misc.imread('/home/abdularis/image_query.jpg')
 
-        probs_labels, images_result = image_search.search_image(img, get_db())
+        threshold = float(request.form['threshold'])
+        print(threshold)
+        print(request.form['metric'])
+
+        probs_labels, images_result = image_search.search_image(img, get_db(), request.form['metric'], threshold)
 
         return jsonify(pred_labels=probs_labels[0],
                        result=images_result)

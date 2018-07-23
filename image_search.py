@@ -36,12 +36,16 @@ def query_images(db, query_labels):
     return [Image(row[0], row[1], row[2]) for row in db_images]
 
 
-def search_image(image, db):
+def search_image(image, db, distance_metric='c', threshold=0.4):
     image = transform.resize(image, (128, 128))
     probs, features = model_client.inference(np.array([image], dtype=np.float32))
     probs_labels = cfg.get_predictions_labels([probs], 2)[0]
     images_result = query_images(db, probs_labels)
-    images_result = distance_metrics.CosineDistance(threshold=0.4).filter(features, images_result)
+
+    if distance_metric == 'c':
+        images_result = distance_metrics.CosineDistance(threshold=threshold).filter(features, images_result)
+    elif distance_metric == 'e':
+        images_result = distance_metrics.EuclideanDistance(threshold=threshold).filter(features, images_result)
     images_result = [img[0].path for img in images_result]
 
     return probs_labels, images_result
