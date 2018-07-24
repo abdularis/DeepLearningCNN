@@ -10,7 +10,9 @@ def export_model(model_arch_module, model_path, output_path):
     import tensorflow as tf
 
     model = model_arch_module.build_model_arch()
-    extractor = model.stored_ops['features']
+    extractor_fc2 = model.stored_ops['features-fc2']
+    extractor_fc1 = model.stored_ops['features-fc1']
+    extractor_flt = model.stored_ops['features-flt']
 
     saver = tf.train.Saver()
     with tf.Session() as sess:
@@ -18,20 +20,29 @@ def export_model(model_arch_module, model_path, output_path):
 
         ti_input_images = tf.saved_model.utils.build_tensor_info(model.x)
         ti_output_probs = tf.saved_model.utils.build_tensor_info(model.prediction)
-        ti_output_features = tf.saved_model.utils.build_tensor_info(extractor)
+        ti_output_features_fc2 = tf.saved_model.utils.build_tensor_info(extractor_fc2)
+        ti_output_features_fc1 = tf.saved_model.utils.build_tensor_info(extractor_fc1)
+        ti_output_features_flt = tf.saved_model.utils.build_tensor_info(extractor_flt)
 
-        pred_signature = tf.saved_model.signature_def_utils.build_signature_def(
-            inputs={'images': ti_input_images},
-            outputs={'probs': ti_output_probs, 'features': ti_output_features},
-            method_name=tf.saved_model.signature_constants.PREDICT_METHOD_NAME
-        )
+        def create_prediction_signature(tensor_info_for_features_ext):
+            return tf.saved_model.signature_def_utils.build_signature_def(
+                inputs={'images': ti_input_images},
+                outputs={'probs': ti_output_probs, 'features': tensor_info_for_features_ext},
+                method_name=tf.saved_model.signature_constants.PREDICT_METHOD_NAME
+            )
+
+        pred_signature_fc2 = create_prediction_signature(ti_output_features_fc2)
+        pred_signature_fc1 = create_prediction_signature(ti_output_features_fc1)
+        pred_signature_flt = create_prediction_signature(ti_output_features_flt)
 
         builder = tf.saved_model.builder.SavedModelBuilder(output_path)
         builder.add_meta_graph_and_variables(
             sess, [tf.saved_model.tag_constants.SERVING],
             signature_def_map={
-                'predict_images': pred_signature,
-                tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY: pred_signature
+                'predict_images': pred_signature_fc2,
+                'predict_images_fc1': pred_signature_fc1,
+                'predict_images_flt': pred_signature_flt,
+                tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY: pred_signature_fc2
             }
         )
         builder.save()
