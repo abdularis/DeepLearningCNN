@@ -10,6 +10,7 @@ import image_search
 app = Flask(__name__)
 
 
+TEMP_QUERY_IMAGE_PATH = '/tmp/image_query.jpg'
 DATABASE = 'gallery.db'
 
 
@@ -37,9 +38,9 @@ def search():
     if request.method == 'POST':
         print(request)
         f = request.files['image']
-        f.save('/home/abdularis/image_query.jpg')
+        f.save(TEMP_QUERY_IMAGE_PATH)
 
-        img = scipy.misc.imread('/home/abdularis/image_query.jpg')
+        img = scipy.misc.imread(TEMP_QUERY_IMAGE_PATH)
 
         threshold = float(request.form['threshold'])
         print(threshold)
