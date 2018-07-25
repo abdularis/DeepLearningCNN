@@ -1,7 +1,7 @@
 # api.py
 # Created by abdularis on 16/07/18
 
-from flask import Flask, request, jsonify, g, url_for, render_template
+from flask import Flask, request, jsonify, g, render_template
 import scipy.misc
 import os
 import sqlite3
@@ -28,6 +28,10 @@ def close_connection(exception):
         db.close()
 
 
+def _get_paths(images_result):
+    return [img[0].path for img in images_result]
+
+
 @app.route('/api/search', methods=['POST'])
 def search():
     if request.method == 'POST':
@@ -44,7 +48,7 @@ def search():
         probs_labels, images_result = image_search.search_image(img, get_db(), request.form['metric'], threshold)
 
         return jsonify(pred_labels=probs_labels[0],
-                       result=images_result)
+                       result=_get_paths(images_result))
 
 
 @app.route('/')
@@ -56,7 +60,7 @@ def index():
         probs_labels, images_result = image_search.search_image(img, get_db())
         return render_template('index.html', title='Image Search - search by gallery',
                                gallery_path=os.path.join('static/gallery/', gallery_path),
-                               pred_labels=probs_labels[0], img_path_list=images_result)
+                               pred_labels=probs_labels[0], img_path_list=_get_paths(images_result))
     return render_template('index.html', title='Image Search')
 
 

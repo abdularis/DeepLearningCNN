@@ -46,6 +46,5 @@ def search_image(image, db, distance_metric='c', threshold=0.4):
         images_result = distance_metrics.CosineDistance(threshold=threshold).filter(features, images_result)
     elif distance_metric == 'e':
         images_result = distance_metrics.EuclideanDistance(threshold=threshold).filter(features, images_result)
-    images_result = [img[0].path for img in images_result]
 
     return probs_labels, images_result
