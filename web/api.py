@@ -31,21 +31,31 @@ def close_connection(exception):
 
 def _get_paths(images_result):
     return [img[0].path for img in images_result]
+    # final_result = []
+    # for img, distance in images_result:
+    #     del img.features
+    #     final_result.append({
+    #         'path': img.path,
+    #         'pred_labels': img.pred_labels
+    #     })
+    # return final_result
 
 
 @app.route('/api/search', methods=['POST'])
 def search():
     if request.method == 'POST':
-        print(request)
-        f = request.files['image']
-        f.save(TEMP_QUERY_IMAGE_PATH)
 
-        img = scipy.misc.imread(TEMP_QUERY_IMAGE_PATH)
+        image_path = TEMP_QUERY_IMAGE_PATH
+        if request.args.get('query_gallery', ''):
+            image_path = request.args.get('query_gallery', image_path)
+            image_path = os.path.join('web', image_path)
+        else:
+            f = request.files['image']
+            f.save(image_path)
+
+        img = scipy.misc.imread(image_path)
 
         threshold = float(request.form['threshold'])
-        print(threshold)
-        print(request.form['metric'])
-
         probs_labels, images_result = image_search.search_image(img, get_db(), request.form['metric'], threshold)
 
         return jsonify(pred_labels=probs_labels[0],

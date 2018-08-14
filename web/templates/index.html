@@ -75,6 +75,9 @@
 <script src="{{ url_for('static', filename='js/img_loader.js') }}"></script>
 <script type="text/javascript">
 
+    DEFAULT_SEARCH_URL = "/api/search";
+    search_url = DEFAULT_SEARCH_URL;
+
     {% if img_path_list %}
         imgLoader.searchResult = {
                                     pred_labels: '{{ pred_labels }}',
@@ -89,6 +92,7 @@
         imgLoader.resultStart = 0;
         imgLoader.resultEnd = Math.min(50, imgLoader.searchResult.result.length);
         populateWithSearchResult();
+        search_url += "?query_gallery={{ gallery_path }}";
     {% endif %}
 
     function showResultHeader(resp) {
@@ -102,7 +106,7 @@
     $("form[name='search']").submit(function(event) {
         var formData = new FormData($(this)[0]);
          $.ajax({
-            url: "/api/search",
+            url: search_url,
             type: "POST",
             data: formData,
             async: true,
@@ -137,6 +141,7 @@
 
         reader.onload = function(e) {
           showQueryImage(e.target.result, input.files[0].name);
+          search_url = DEFAULT_SEARCH_URL;
         };
 
         reader.readAsDataURL(input.files[0]);
